@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">智联车网</string>
+
+
+    <string name="local_update">本地升级</string>
+    <string name="online_update">在线升级</string>
+    <string name="check_update">检查更新</string>
+    <string name="about_vrd">关于VRD</string>
+    <string name="device_info">设备信息</string>
+    <string name="car_master">车主服务</string>
+    <string name="car_team">车队管理</string>
+
+
+
+</resources>

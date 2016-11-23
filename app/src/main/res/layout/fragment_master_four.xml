@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:background="@drawable/ic_default_app_bg">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:layout_marginTop="@dimen/px_35"
+        android:textSize="@dimen/text_h1_size"
+        android:textStyle="bold"
+        android:textColor="@color/white"
+        android:text="免费注册"/>
+
+    <ImageView
+        android:id="@+id/iv_imei_erweima"
+        android:layout_marginTop="@dimen/px_90"
+        android:layout_width="@dimen/px_240"
+        android:layout_height="@dimen/px_240"
+        android:background="@drawable/ic_erweima_bg"
+        android:layout_gravity="center_horizontal" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/px_16"
+        android:layout_marginRight="@dimen/px_16"
+        android:padding="@dimen/px_26"
+        android:layout_marginTop="@dimen/px_90"
+        android:gravity="center_horizontal"
+        android:textSize="@dimen/text_h2_size"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:background="@drawable/shape_white_trans_bg"
+        android:text="扫描二维码关注公众号实现车主服务"/>
+
+</LinearLayout>

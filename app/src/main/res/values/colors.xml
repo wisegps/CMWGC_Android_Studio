@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--<color name="head_color">#F5891A</color>-->
+    <!--<color name="text_color">#ffffff</color>-->
+    <!--&lt;!&ndash; 二维码 &ndash;&gt;-->
+    <!--<color name="transparent">#00000000</color>-->
+    <!--<color name="viewfinder_mask">#60000000</color>-->
+    <!--<color name="result_view">#b0000000</color>-->
+    <!--<color name="viewfinder_frame">#ff000000</color>-->
+    <!--<color name="viewfinder_laser">#ffff0000</color>-->
+    <!--<color name="possible_result_points">#c0ffff00</color>-->
+    <!---->
+    <!--<color name="title_color">#F47c14</color>-->
+
+
+    <!--注意也是-->
+    <color name="colorPrimary">@color/blue_theme</color>
+    <color name="colorPrimaryDark">@color/blue_theme</color>
+    <color name="colorAccent">@color/white</color>
+    <color name="blue_theme">#067de1</color>
+    <color name="pink">#FF4081</color>
+
+
+    <color name="black_light">#222222</color>
+    <color name="gray">#eaeaea</color>
+    <color name="gray_dark">#aeaeae</color>
+    <color name="yellow">#efd408</color>
+    <color name="gray_line">#d3d9df</color>
+
+    <color name="transparent">@android:color/transparent</color>
+    <color name="black">#000000</color>
+    <color name="black_5">#0D000000</color>
+    <color name="black_9">#17000000</color>
+    <color name="black_10">#19000000</color>
+    <color name="black_15">#26000000</color>
+    <color name="black_20">#33000000</color>
+    <color name="black_27">#45000000</color>
+    <color name="black_30">#4D000000</color>
+    <color name="black_35">#59000000</color>
+    <color name="black_40">#66000000</color>
+    <color name="black_45">#73000000</color>
+    <color name="black_50">#80000000</color>
+    <color name="black_60">#99000000</color>
+    <color name="black_65">#a5000000</color>
+    <color name="black_80">#cc000000</color>
+    <color name="black_85">#D9000000</color>
+    <color name="black_90">#e5000000</color>
+    <color name="black_70">#B2000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="white_20">#33ffffff</color>
+    <color name="white_30">#4dffffff</color>
+    <color name="white_50">#80ffffff</color>
+    <color name="white_70">#b2ffffff</color>
+    <color name="color_f2f2f2">#f2f2f2</color>
+    <color name="line_color">@color/black_10</color>
+    <color name="color_f84f21">#F84F21</color>
+    <color name="color_6f6f6f">#6F6F6F</color>
+    <color name="color_cd312f">#CD312F</color>
+    <color name="color_7dcf2c">#7dcf2c</color>
+    <color name="color_b3b3b3">#b3b3b3</color>
+
+
+
+    <!--烟白色 -->
+
+    <!--白色半透明-->
+    <color name="translucent_background">#d0ffffff</color>
+    <!--下面的部分色调是设计给出的配色参考-->
+
+    <!--主色调-->
+    <color name="color_de4942">#de4942</color>
+    <color name="color_main">@color/color_de4942</color>
+    <!--辅色-->
+    <color name="color_ff501b">#ff501b</color>
+    <color name="color_7dcf2d">#7dcf2d</color>
+    <color name="color_second_red">@color/color_ff501b</color>
+    <color name="color_second_blue">@color/color_7dcf2d</color>
+    <!--底色-->
+    <color name="color_ecedf3">#ecedf3</color>
+    <color name="color_background">@color/color_ecedf3</color>
+    <!--字体-->
+    <color name="color_4d5359">#4d5359</color>
+    <color name="color_545866">#545866</color>
+    <color name="color_aab1b8">#aab1b8</color>
+    <color name="color_afb6bc">#afb6bc</color>
+    <color name="color_text1">@color/color_4d5359</color>
+    <color name="color_text2">@color/color_545866</color>
+    <color name="color_text3">@color/color_aab1b8</color>
+    <color name="color_text4">@color/color_afb6bc</color>
+
+    <!--线-->
+    <color name="color_d3d9df">#d3d9df</color>
+    <color name="color_line">@color/color_d3d9df</color>
+
+
+</resources>

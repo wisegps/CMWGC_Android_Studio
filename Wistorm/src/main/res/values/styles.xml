@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- 时间选择器popwidnow 显示消失动画 -->
+    <style name="timepopwindow_anim_style">
+        <item name="android:windowEnterAnimation">@anim/timepicker_anim_enter_bottom</item>
+        <!-- 指定显示的动画xml -->
+        <item name="android:windowExitAnimation">@anim/timepicker_anim_exit_bottom</item>
+        <!-- 指定消失的动画xml -->
+    </style>
+
+
+    <style name="RotationProgressBarStyle" parent="android:Widget.Holo.ProgressBar">
+        <item name="rpb_color">@color/default_color1</item>
+        <item name="rpb_strokewidth">@dimen/rpb_stroke_width</item>
+        <item name="rpb_sweep_min">@integer/rpb_sweep_min</item>
+        <item name="rpb_sweep_max">@integer/rpb_sweep_max</item>
+        <item name="rpb_sweep_speed">@string/rpb_sweep_speed</item>
+        <item name="rpb_rotation_speed">@string/rpb_rotation_speed</item>
+    </style>
+
+    <declare-styleable name="BGAIndicator">
+        <attr name="indicator_textColor" format="color|reference" />
+        <attr name="indicator_textSizeNormal" format="dimension|reference" />
+        <attr name="indicator_textSizeSelected" format="dimension|reference" />
+        <attr name="indicator_triangleHorizontalMargin" format="dimension|reference" />
+        <attr name="indicator_triangleColor" format="color|reference" />
+        <attr name="indicator_triangleHeight" format="dimension|reference" />
+        <attr name="indicator_hasDivider" format="boolean" />
+        <attr name="indicator_dividerColor" format="color|reference" />
+        <attr name="indicator_dividerWidth" format="dimension|reference" />
+        <attr name="indicator_dividerVerticalMargin" format="dimension|reference" />
+    </declare-styleable>
+
+
+    <!-- dialog style-->
+    <style name="progressDialog" parent="@android:style/Theme.Dialog">
+        <item name="android:windowFrame">@null</item><!--  边框  -->
+        <item name="android:windowIsFloating">true</item><!--  是否悬浮在activity上 -->
+        <item name="android:windowIsTranslucent">true</item> <!--  半透明 -->
+        <item name="android:windowNoTitle">true</item> <!--  无标题 -->
+        <item name="android:windowBackground">@android:color/transparent</item> <!--  背景透明 -->
+        <item name="android:backgroundDimEnabled">true</item>  <!--  模糊 -->
+        <item name="android:backgroundDimAmount">0.6</item> <!--  灰度 -->
+        <item name="android:windowContentOverlay">@null</item><!--  对话框是否有遮盖  -->
+        <!--   <item name="android:windowAnimationStyle">@style/dialog_animation</item>弹出或者进入时的动画效果 -->
+        <item name="android:colorBackgroundCacheHint">@null</item> <!--  背景缓存颜色  -->
+    </style>
+</resources>

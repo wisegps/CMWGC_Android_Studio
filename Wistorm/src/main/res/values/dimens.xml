@@ -1,0 +1,11 @@
+<resources>
+
+    
+    <dimen name="rpb_stroke_width">4dip</dimen>
+    <integer name="rpb_sweep_min">20</integer>
+    <integer name="rpb_sweep_max">300</integer>
+
+    <item name="rpb_sweep_speed" format="float" type="string">1</item>
+    <item name="rpb_rotation_speed" format="float" type="string">1</item>
+    
+</resources>

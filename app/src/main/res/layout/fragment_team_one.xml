@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:gravity="center_horizontal"
+    android:layout_height="match_parent"
+    android:background="@drawable/ic_default_app_bg">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:weightSum="1">
+
+        <ImageView
+            android:layout_centerHorizontal="true"
+            android:layout_margin="@dimen/px_16"
+            android:layout_width="360dp"
+            android:layout_height="100dp"
+            android:background="@drawable/ic_woguanche"
+            android:layout_gravity="center_horizontal" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_h1_size"
+            android:layout_marginTop="@dimen/px_70"
+            android:layout_marginBottom="@dimen/px_80"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:text="互联网 + 车辆管理"/>
+        <TextView
+            android:layout_marginTop="@dimen/px_16"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/px_66"
+            android:layout_marginRight="@dimen/px_66"
+            android:gravity="center_horizontal"
+            android:textSize="@dimen/text_h2_size"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:background="@drawable/shape_white_trans_bg"
+            android:padding="@dimen/px_26"
+            android:text="免费的政企车队安全行驶监督、科学调度和日常管理工具"/>
+    </LinearLayout>
+</RelativeLayout>

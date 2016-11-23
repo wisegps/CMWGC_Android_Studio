@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ProgressBar
+        android:id="@+id/progressbar_download"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/px_46"
+        android:layout_marginRight="@dimen/px_50"
+        android:layout_marginLeft="@dimen/px_50"
+        android:layout_marginBottom="@dimen/px_46"
+        style="?android:attr/progressBarStyleHorizontal" />
+
+</LinearLayout>

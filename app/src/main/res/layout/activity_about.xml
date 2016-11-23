@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/ic_default_app_bg">
+
+    <ImageView
+        android:id="@+id/tv_app"
+        android:layout_marginTop="@dimen/px_96"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/ic_vrd_logo"/>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_centerInParent="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/tv_app_name"
+            android:layout_below="@id/tv_app"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:textSize="46sp"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:text="@string/app_name"/>
+
+        <TextView
+            android:id="@+id/tv_ver"
+            android:layout_marginTop="@dimen/px_26"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:textStyle="bold"
+            android:textSize="@dimen/text_h2_size"
+            android:textColor="@color/white"
+            android:text="VER:1.0"/>
+
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/tv_check_update"
+        android:layout_width="@dimen/px_450"
+        android:layout_height="@dimen/px_120"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="@dimen/px_96"
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:textSize="@dimen/text_middle"
+        android:background="@drawable/selector_btn_bg"
+        android:text="@string/check_update"/>
+
+</RelativeLayout>

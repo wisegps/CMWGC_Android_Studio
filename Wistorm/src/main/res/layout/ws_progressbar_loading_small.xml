@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:wistorm="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:paddingLeft="18dp"
+    android:paddingRight="24dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp"
+    android:background="@drawable/ws_alpha_overlay" >     
+        
+    <!-- wistorm:rpb_color="#eeeeee" 自定义rotationProgressBar 颜色 -->
+    <com.wicare.wistorm.ui.WRotationProgressBar 
+         android:id="@+id/rotation_progress_bar"
+	     style="@style/RotationProgressBarStyle"
+	     android:layout_width="36dp"
+	     android:layout_height="36dp"
+	     wistorm:rpb_color="#eeeeee" />
+        
+    <TextView 
+        android:id="@+id/tv_loading_msg" 
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content" 
+        android:layout_toRightOf="@id/rotation_progress_bar"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="48dp"
+        android:textColor="#eeeeee"
+        android:textSize="16sp"
+        android:text="加载中..."/> 
+           
+</RelativeLayout>
