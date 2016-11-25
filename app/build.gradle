@@ -8,8 +8,8 @@ android {
         applicationId "com.wgc.cmwgc"
         minSdkVersion 15
         targetSdkVersion 24
-        versionCode 15
-        versionName "2.05"
+        versionCode 16
+        versionName "2.06"
     }
     repositories {
         maven {

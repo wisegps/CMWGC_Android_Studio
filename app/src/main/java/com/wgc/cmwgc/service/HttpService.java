@@ -52,7 +52,7 @@ public class HttpService extends Service {
     private String latt  = "0";
     private String lonn  ="0";
     private int speedGps = 0;
-    private int gpsType  = 1;
+    private int gpsType  = 2;
     private int singnal  = 0;
     private WDeviceApi deviceApi;
     private WUserApi userApi;
@@ -94,9 +94,9 @@ public class HttpService extends Service {
 			Config.gps_time = WiStormApi.getCurrentTime();
 			speedGps =  (int)location.getSpeed();
 			if (location.getProvider().equals("gps")) {
-				gpsType = 1;
-			}else{
 				gpsType = 2;
+			}else{
+				gpsType = 1;
 			}
 			Log.e(TAG, "定位成功----:" + "速度 ：" + speedGps  + " type : " + gpsType  +  "   lon：" + location.getLongitude() + "   lat：" + location.getLatitude());
 			if(isFirst){
