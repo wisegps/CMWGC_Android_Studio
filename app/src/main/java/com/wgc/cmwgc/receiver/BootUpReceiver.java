@@ -1,8 +1,11 @@
 package com.wgc.cmwgc.receiver;
 
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.IBinder;
 import android.util.Log;
 
 import com.wgc.cmwgc.Until.SystemTools;
@@ -16,14 +19,10 @@ public class BootUpReceiver extends BroadcastReceiver{
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		// TODO Auto-generated method stub
-		Log.e("HttpService", "shou dao  kai ji  guang bo ");
+		Log.e("BootUpReceiver", "shou dao  kai ji  guang bo ......... ");
 		if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)){ 
 			startService(context);
-	    } else if (intent.getAction().equals(Intent.ACTION_PACKAGE_ADDED)){
-			if(intent.getDataString().equals(context.getPackageName())){
-				//安装完APK
-			}
-		}
+	    }
 	}
 	
 	
@@ -31,7 +30,7 @@ public class BootUpReceiver extends BroadcastReceiver{
 	/**
 	 * @param context
 	 */
-	private void startService(final Context context){
+	public static void startService(final Context context){
 		Timer timer = new Timer();
 		TimerTask task = new TimerTask() {
 			
@@ -42,8 +41,8 @@ public class BootUpReceiver extends BroadcastReceiver{
 			}
 		};
 		timer.schedule(task, 12000);
-		
-
 	}
+
+
 
 }

@@ -34,6 +34,12 @@ public class Config {
 	public static String BINDED_UID = "binded_uid";
 	public static String CUSTOMER_NAME = "customer_name";
 	public static String CUSTOMER_SERVICE_TEL = "customer_service_tel";
+	public static String TOTAL_MILEAGE = "total_mileage";//里程
+
+	public static String LAST_LAT = "last_lat";
+	public static String LAST_LON = "last_lon";
+
+	public static String IS_REGISTER = "is_register";//是否注册
 
 
 }

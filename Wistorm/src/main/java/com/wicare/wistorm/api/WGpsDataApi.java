@@ -16,8 +16,8 @@ import java.util.HashMap;
 public class WGpsDataApi  extends WiStormApi {
 
     private String Method_Gpsdata_Create = "wicare._iotGpsData.create";//创建历史定位记录
-    private String Method_Gpsdata_Get = "wicare._iotGpsData.list";//获取历史定位记录
-
+    private String Method_Gpsdata_GetList = "wicare._iotGpsData.list";//获取历史定位记录列表
+    private String Method_Gpsdata_Get = "wicare._iotGpsData.get";//获取历史定位记录列表
 
     private BaseVolley volley;
 
@@ -56,10 +56,15 @@ public class WGpsDataApi  extends WiStormApi {
      * @param onFailure
      */
     public void getGpsList(HashMap<String, String> params,String fields,OnSuccess onSuccess,OnFailure onFailure){
-        String url = super.getUrl(Method_Gpsdata_Get, fields, params);
+        String url = super.getUrl(Method_Gpsdata_GetList, fields, params);
         Log.i("TEST_WISTORM", url);
         volley.request(url, onSuccess,onFailure);
     }
 
+    public void getGps(HashMap<String, String> params,String fields,OnSuccess onSuccess,OnFailure onFailure){
+        String url = super.getUrl(Method_Gpsdata_Get, fields, params);
+        Log.i("TEST_WISTORM", url);
+        volley.request(url, onSuccess,onFailure);
+    }
 
 }

@@ -66,6 +66,8 @@ public  class VersionUpdate {
     };
 
 
+    private UpdateListener updateListener=null;
+
     //下载包安装路径
     private static final String savePath = Environment
             .getExternalStorageDirectory().getPath() + "/updateAppPath/";
@@ -101,6 +103,7 @@ public  class VersionUpdate {
      * @param listener
      */
     public void check(String url,final UpdateListener listener){
+        this.updateListener = listener;
         getVersionInfo(url, new OnSuccess() {
             @Override
             protected void onSuccess(String response) {
@@ -115,9 +118,9 @@ public  class VersionUpdate {
                         JSONArray jsonArray = new JSONArray(updateMsg);
                         updateLogs = jsonArray.getJSONObject(jsonArray.length()-1).getString("log").replaceAll("\\\\r\\\\n", "\n");//替换\r\n
                         showDialog(mContext,updateLogs,updateApkUrl);
-                        listener.hasNewVersion(true,updateLogs,updateApkUrl);
+                        updateListener.hasNewVersion(true,updateLogs,updateApkUrl);
                     }else{
-                        listener.hasNewVersion(false,"nothing update","nothing update");
+                        updateListener.hasNewVersion(false,"nothing update","nothing update");
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -126,7 +129,7 @@ public  class VersionUpdate {
         }, new OnFailure() {
             @Override
             protected void onFailure(VolleyError error) {
-                listener.hasNewVersion(false,"nothing update","nothing update");
+                updateListener.hasNewVersion(false,"nothing update","nothing update");
             }
         });
     }
@@ -138,6 +141,7 @@ public  class VersionUpdate {
      * @param listener
      */
     public void checkInBackService(String url,final UpdateListener listener){
+        this.updateListener = listener;
         getVersionInfo(url, new OnSuccess() {
             @Override
             protected void onSuccess(String response) {
@@ -151,9 +155,9 @@ public  class VersionUpdate {
                     if(vsersionLast>vsersionNative){
                         JSONArray jsonArray = new JSONArray(updateMsg);
                         updateLogs = jsonArray.getJSONObject(jsonArray.length()-1).getString("log").replaceAll("\\\\r\\\\n", "\n");//替换\r\n
-                        listener.hasNewVersion(true,updateLogs,updateApkUrl);
+                        updateListener.hasNewVersion(true,updateLogs,updateApkUrl);
                     }else{
-                        listener.hasNewVersion(false,"nothing update","nothing update");
+                        updateListener.hasNewVersion(false,"nothing update","nothing update");
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -162,7 +166,7 @@ public  class VersionUpdate {
         }, new OnFailure() {
             @Override
             protected void onFailure(VolleyError error) {
-                listener.hasNewVersion(false,"nothing update","nothing update");
+                updateListener.hasNewVersion(false,"nothing update","nothing update");
             }
         });
     }
@@ -182,6 +186,7 @@ public  class VersionUpdate {
 
     public interface UpdateListener {
         void hasNewVersion(boolean isHad,String updateMsg,String apkUrl);
+        void finishDownloadApk(String saveFileName);
     }
 
 
@@ -294,7 +299,10 @@ public  class VersionUpdate {
                         if(downloadDialog!=null){
                             downloadDialog.dismiss();
                         }
-                        showInstallDialog(mContext);
+//                        showInstallDialog(mContext);
+
+                        updateListener.finishDownloadApk(saveFileName);
+
                     }
                     mProgress.setProgress(size);
                     break;
@@ -313,29 +321,29 @@ public  class VersionUpdate {
     };
 
 
-    /**
-     * 马上安装对话框
-     * @param context
-     */
-    private void showInstallDialog(Context context){
-        CustomerDialog.Builder builder = new CustomerDialog.Builder(context);
-        builder.setTitle(context.getResources().getString(R.string.new_version_install));
-        builder.setMessage(context.getResources().getString(R.string.if_install));
-        builder.setPositiveButton(context.getResources().getString(R.string.install_now), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-                installApk();
-            }
-        });
-        builder.setNegativeButton( new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-            }
-        });
-        builder.create().show();
-    }
+//    /**
+//     * 马上安装对话框
+//     * @param context
+//     */
+//    private void showInstallDialog(Context context){
+//        CustomerDialog.Builder builder = new CustomerDialog.Builder(context);
+//        builder.setTitle(context.getResources().getString(R.string.new_version_install));
+//        builder.setMessage(context.getResources().getString(R.string.if_install));
+//        builder.setPositiveButton(context.getResources().getString(R.string.install_now), new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialogInterface, int i) {
+//                dialogInterface.dismiss();
+//                installApk();
+//            }
+//        });
+//        builder.setNegativeButton( new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialogInterface, int i) {
+//                dialogInterface.dismiss();
+//            }
+//        });
+//        builder.create().show();
+//    }
 
     /**
      * 弹框
@@ -347,20 +355,20 @@ public  class VersionUpdate {
     }
 
 
-    /**
-     * 安装apk
-     *
-     */
-    private void installApk() {
-        File apkfile = new File(saveFileName);
-        if (!apkfile.exists()) {
-            return;
-        }
-        Intent i = new Intent(Intent.ACTION_VIEW);
-        i.setDataAndType(Uri.parse("file://" + apkfile.toString()),
-                "application/vnd.android.package-archive");
-        mContext.startActivity(i);
-    }
+//    /**
+//     * 安装apk
+//     *
+//     */
+//    private void installApk() {
+//        File apkfile = new File(saveFileName);
+//        if (!apkfile.exists()) {
+//            return;
+//        }
+//        Intent i = new Intent(Intent.ACTION_VIEW);
+//        i.setDataAndType(Uri.parse("file://" + apkfile.toString()),
+//                "application/vnd.android.package-archive");
+//        mContext.startActivity(i);
+//    }
 
     AlertDialog downloadDialog;
     ProgressBar  mProgress;

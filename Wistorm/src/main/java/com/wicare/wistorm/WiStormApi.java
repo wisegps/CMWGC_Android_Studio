@@ -250,6 +250,8 @@ public class WiStormApi{
 		final char strAite= '@';
 		final char strNull= ' ';
 		final char strDouh= ',';
+		final char strLeftKuohao = '(';
+		final char strRightKuohao = ')';
 		String str = "";
 		for(int i=0;i<value.length();i++){
 			if(value.charAt(i) == strMao){
@@ -261,7 +263,14 @@ public class WiStormApi{
 			}
 			else if(value.charAt(i) == strDouh){
 				str += strDouh;
-			}else{
+			}
+			else if(value.charAt(i) == strLeftKuohao){
+				str += "%28";
+			}
+			else if(value.charAt(i) == strRightKuohao){
+				str += "%29";
+			}
+			else{
 				str +=Uri.encode(value.charAt(i)+"");
 			}
 		}
