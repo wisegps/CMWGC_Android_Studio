@@ -1,1 +1,1 @@
-include ':app', ':Wistorm'
+include ':app', ':Wistorm', ':LibMarsdaemon'

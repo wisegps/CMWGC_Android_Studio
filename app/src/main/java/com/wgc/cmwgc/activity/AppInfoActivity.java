@@ -51,7 +51,7 @@ public class AppInfoActivity extends AppCompatActivity {
     private String isGpsAvailable = "否";
     private int numOfSatellites = 0;
     private int useOfSatellites = 0;
-    private int HeartBeat = 0;
+    private boolean HeartBeat = false;
     private int versionCode=0;
 
     @Override
@@ -87,7 +87,7 @@ public class AppInfoActivity extends AppCompatActivity {
 
         @Override
         public void onReceive(final Context context, final Intent intent) {
-            HeartBeat = intent.getIntExtra("Heart",0);
+            HeartBeat = intent.getBooleanExtra("Heart",false);
             Log.w(TAG,"收到广播 ：" + HeartBeat);
         }
     };
@@ -189,7 +189,6 @@ public class AppInfoActivity extends AppCompatActivity {
 
                     Iterable<GpsSatellite> allSatellites = gpsStatus.getSatellites();
                     Iterator<GpsSatellite> iterator = allSatellites.iterator();
-
                     int satellites = 0;
                     int useInfix = 0;
                     int maxSatellites=gpsStatus.getMaxSatellites();

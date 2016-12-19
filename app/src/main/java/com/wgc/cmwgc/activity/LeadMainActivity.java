@@ -23,6 +23,7 @@ import com.wgc.cmwgc.R;
 import com.wgc.cmwgc.Until.GetSystem;
 import com.wgc.cmwgc.Until.SystemTools;
 import com.wgc.cmwgc.app.Config;
+import com.wgc.cmwgc.service.CoreServer;
 import com.wgc.cmwgc.service.HttpService;
 import com.wicare.wistorm.WEncrypt;
 import com.wicare.wistorm.api.WCustomer;
@@ -145,7 +146,7 @@ public class LeadMainActivity extends AppCompatActivity{
     private void checkServiceIsRunning() {
         if (!SystemTools.isWorked(this, "com.wgc.cmwgc.service.HttpService")) {
             Log.e(TAG, "服务没有运行，启动服务");
-            Intent intent_service = new Intent(LeadMainActivity.this, HttpService.class);
+            Intent intent_service = new Intent(LeadMainActivity.this, CoreServer.class);
             startService(intent_service);
         }
     }
@@ -261,7 +262,6 @@ public class LeadMainActivity extends AppCompatActivity{
                         editor.putBoolean(Config.BINDED,false);
                         editor.commit();
                     }
-
                     if(object1.has("model")){
                         editor.putString(Config.MODEL,object1.getString("model").toString());
                         editor.commit();
@@ -273,6 +273,8 @@ public class LeadMainActivity extends AppCompatActivity{
         }, null);
     }
 
+
+    int requestNum = 0;
     /**
      * 获取token
      */
@@ -284,6 +286,7 @@ public class LeadMainActivity extends AppCompatActivity{
             protected void onSuccess(String response) {
                 // TODO Auto-generated method stub
                 Log.d(TAG, response);
+                requestNum = 0;
                 try {
                     JSONObject jsonObject = new JSONObject(response);
                     if ("0".equals(jsonObject.getString("status_code"))) {
@@ -300,6 +303,10 @@ public class LeadMainActivity extends AppCompatActivity{
             @Override
             protected void onFailure(VolleyError error) {
                 // TODO Auto-generated method stub
+                requestNum ++;
+                if(requestNum < 5){
+                    getToken();
+                }
             }
         });
     }
@@ -312,23 +319,24 @@ public class LeadMainActivity extends AppCompatActivity{
         customer.get(params, fields, new OnSuccess() {
             @Override
             protected void onSuccess(String response) {
-                Logger.d("获取客户信息：" + uidOfdid + " == :" +  response);
+                Logger.d("获取客户信息：" + uidOfdid + " == :" + response);
+                requestNum=0;
                 try {
                     JSONObject jsonObject = new JSONObject(response);
-                    if("0".equals(jsonObject.getString("status_code"))){
-                        if(jsonObject.isNull("data")){
-                        }else{
+                    if ("0".equals(jsonObject.getString("status_code"))) {
+                        if (jsonObject.isNull("data")) {
+                        } else {
                             JSONObject object = new JSONObject(jsonObject.getString("data"));
-                            if(object.has("parentId")){
+                            if (object.has("parentId")) {
                                 String pid = "";
                                 String strPid = object.getString("parentId");
                                 JSONArray jsonArray = new JSONArray(strPid);
                                 Logger.d("获取 parentid ：" + strPid + "---" + jsonArray.length());
-                                if(jsonArray.length()>0){
+                                if (jsonArray.length() > 0) {
                                     pid = jsonArray.get(0).toString();
                                 }
                                 Logger.d("获取 parentid ：" + pid);
-                                if(!TextUtils.isEmpty(pid))
+                                if (!TextUtils.isEmpty(pid))
                                     getServiceInfo(pid);
                             }
                         }
@@ -337,7 +345,15 @@ public class LeadMainActivity extends AppCompatActivity{
                     e.printStackTrace();
                 }
             }
-        },null);
+        }, new OnFailure() {
+            @Override
+            protected void onFailure(VolleyError error) {
+                requestNum ++;
+                if(requestNum < 5){
+                    getToken();
+                }
+            }
+        });
     }
 
 
@@ -349,22 +365,23 @@ public class LeadMainActivity extends AppCompatActivity{
         customer.get(params, fields, new OnSuccess() {
             @Override
             protected void onSuccess(String response) {
-                Logger.d("获取客户parentId信息："  + " == :" +  response);
+                Logger.d("获取客户parentId信息：" + " == :" + response);
+                requestNum =0;
                 try {
                     JSONObject jsonObject = new JSONObject(response);
-                    if("0".equals(jsonObject.getString("status_code"))){
-                        if(jsonObject.isNull("data")){
-                        }else{
+                    if ("0".equals(jsonObject.getString("status_code"))) {
+                        if (jsonObject.isNull("data")) {
+                        } else {
                             JSONObject object = new JSONObject(jsonObject.getString("data"));
-                            if(object.has("tel")){
+                            if (object.has("tel")) {
                                 String tel = object.getString("tel");
-                                editor.putString(Config.CUSTOMER_SERVICE_TEL,tel);
+                                editor.putString(Config.CUSTOMER_SERVICE_TEL, tel);
                                 editor.commit();
                                 tvCustomerServiceTel.setText(tel);
                             }
-                            if(object.has("name")){
+                            if (object.has("name")) {
                                 String strServiceId = object.getString("name");
-                                editor.putString(Config.CUSTOMER_NAME,strServiceId);
+                                editor.putString(Config.CUSTOMER_NAME, strServiceId);
                                 editor.commit();
                                 tvServiceTel.setText(strServiceId);
                             }
@@ -375,7 +392,15 @@ public class LeadMainActivity extends AppCompatActivity{
                     e.printStackTrace();
                 }
             }
-        },null);
+        }, new OnFailure() {
+            @Override
+            protected void onFailure(VolleyError error) {
+                requestNum ++;
+                if(requestNum < 5){
+                    getToken();
+                }
+            }
+        });
     }
 
     /**

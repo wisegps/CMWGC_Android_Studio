@@ -9,6 +9,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.wgc.cmwgc.Until.SystemTools;
+import com.wgc.cmwgc.service.CoreServer;
 import com.wgc.cmwgc.service.HttpService;
 
 import java.util.Timer;
@@ -36,7 +37,7 @@ public class BootUpReceiver extends BroadcastReceiver{
 			
 			@Override
 			public void run() {
-				Intent intent_service = new Intent(context,HttpService.class);
+				Intent intent_service = new Intent(context,CoreServer.class);
 				context.startService(intent_service);
 			}
 		};

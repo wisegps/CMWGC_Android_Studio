@@ -79,9 +79,8 @@ public class HttpService extends Service {
 	private boolean isNetwork = false;
 	private boolean isRegister = false;
 	private boolean isHadOfflineData = false;
+	private boolean isRunning = false;
 	private DBManager dbManager;
-
-//	private MyApplication myApplication;
 
 	@Override
 	public void onCreate() {
@@ -109,8 +108,8 @@ public class HttpService extends Service {
 	}
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		Log.d(TAG, "��服务运行��  onStartCommand");
 		Tel.listen(myListener ,PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+		Logger.w("==== 服务 === " + "onStartCommand");
 		return START_STICKY;
 	}
 
@@ -142,7 +141,6 @@ public class HttpService extends Service {
 				}
 			}else{
 				double dis = SystemTools.getDistance(latt,lonn,location.getLatitude(),location.getLongitude());
-//				double angle = SystemTools.getAngle111(latt,lonn,location.getLatitude(),location.getLongitude());
 				latt = location.getLatitude();
 				lonn = location.getLongitude();
 				Config.gps_time = WiStormApi.getCurrentTime();
@@ -209,7 +207,6 @@ public class HttpService extends Service {
 		editor.putString(Config.LAST_LON,String.valueOf(lonn));
 		editor.putString(Config.LAST_LAT,String.valueOf(latt));
 		editor.commit();
-		Logger.d("里程计算 ： " + mileage);
 	}
 
 	/**
@@ -227,9 +224,8 @@ public class HttpService extends Service {
 	 */
 	private void initBorcast(){
 		IntentFilter filter = new IntentFilter();
-//	    filter.addAction(Intent.ACTION_SCREEN_ON);
-//	    filter.addAction(Intent.ACTION_SCREEN_OFF);
 	    filter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
+		filter.addAction(CoreServer.START_UPLPAD);
 	    registerReceiver(receiver, filter); 
 	}
 	
@@ -252,7 +248,8 @@ public class HttpService extends Service {
 	private void checkIsCreate(){	
 		getToken();	
 	}
-	
+
+	int requestNum = 0;
 	/**
 	 * 获取token
 	 */
@@ -264,6 +261,7 @@ public class HttpService extends Service {
 			protected void onSuccess(String response) {
 				// TODO Auto-generated method stub
 				Log.d(TAG, response);
+				requestNum =0;
 				try {
 					JSONObject jsonObject = new JSONObject(response);
 					if("0".equals(jsonObject.getString("status_code"))){
@@ -280,6 +278,10 @@ public class HttpService extends Service {
 			@Override
 			protected void onFailure(VolleyError error) {
 				// TODO Auto-generated method stub
+				requestNum ++;
+				if(requestNum < 5){
+					getToken();
+				}
 			}
 		});
 	}
@@ -298,6 +300,7 @@ public class HttpService extends Service {
 			protected void onSuccess(String response) {
 				// TODO Auto-generated method stub
 				Log.d(TAG, "服务获取设备返回信息 ：  " + response);
+				requestNum =0;
 				try {
 					JSONObject jsonObject = new JSONObject(response);
 					if(jsonObject.has("data")){
@@ -325,6 +328,10 @@ public class HttpService extends Service {
 			@Override
 			protected void onFailure(VolleyError error) {
 				// TODO Auto-generated method stub
+				requestNum ++;
+				if(requestNum < 5){
+					getToken();
+				}
 			}
 		});
 	}
@@ -364,24 +371,33 @@ public class HttpService extends Service {
 		params.put("did", Config.con_serial);
 		params.put("uid", "0");
 		deviceApi.create(params, new OnSuccess() {
-			
+
 			@Override
 			protected void onSuccess(String response) {
 				// TODO Auto-generated method stub
 				Log.d("TEST_WISTORM", response);
+				requestNum =0;
 				try {
 					JSONObject jsonObject = new JSONObject(response);
-					if("0".equals(jsonObject.getString("status_code"))){
-						editor.putBoolean(Config.IS_REGISTER,true);
+					if ("0".equals(jsonObject.getString("status_code"))) {
+						editor.putBoolean(Config.IS_REGISTER, true);
 						editor.commit();
 						isRegister = true;
 						go();
 					}
 				} catch (JSONException e) {
 					e.printStackTrace();
-				}	
+				}
 			}
-		}, null);
+		}, new OnFailure() {
+			@Override
+			protected void onFailure(VolleyError error) {
+				requestNum ++;
+				if(requestNum < 5){
+					getToken();
+				}
+			}
+		});
 	}
 
 	/**
@@ -391,26 +407,25 @@ public class HttpService extends Service {
 		  
 	    @Override  
 	    public void onReceive(final Context context, final Intent intent) {
-	    	ConnectivityManager connectivityManager = (ConnectivityManager)
-	    			context.getSystemService(Context.CONNECTIVITY_SERVICE);
-			NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-			if(networkInfo != null && networkInfo.isAvailable()){
-				Log.e(TAG, "有网络服务  : ");
-				isNetwork = true;
-				checkIsCreate();
-				if(isHadOfflineData){
-					uploadOfflineData();
+			if(intent.getAction().equals("android.net.conn.CONNECTIVITY_CHANGE")){
+				ConnectivityManager connectivityManager = (ConnectivityManager)
+						context.getSystemService(Context.CONNECTIVITY_SERVICE);
+				NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+				if(networkInfo != null && networkInfo.isAvailable()){
+					Log.e(TAG, "有网络服务  : ");
+					isNetwork = true;
+					checkIsCreate();
+					if(isHadOfflineData){
+						uploadOfflineData();
+					}
+				}else{
+					isNetwork = false;
+					Log.e(TAG, "没有网络连接");
 				}
-			}else{
-				isNetwork = false;
-				Log.e(TAG, "没有网络连接");
+			}else if(intent.getAction().equals(CoreServer.START_UPLPAD)){
+				Log.w(TAG, "哈哈哈哈哈  : ");
+				checkIsCreate();
 			}
-//	    	if(intent.getAction()==Intent.ACTION_SCREEN_ON){
-//	    		Log.d(TAG, "屏幕开启");
-//	    		isUpdate();//������
-//	    	}else if(intent.getAction()==Intent.ACTION_SCREEN_OFF){
-//	    		Log.d(TAG, "屏幕关闭");
-//	    	}
 	    }  
 	};  
 
@@ -419,6 +434,7 @@ public class HttpService extends Service {
 	 */
 	boolean isUpdate = true;
  	private void isUpdate() {
+		time_uptate_apk = 0;
 		if (SystemTools.isSdCardExist()) {
 			VersionUpdate updata = new VersionUpdate(this);
 			updata.checkInBackService(Config.UPDATA_APK_URL, new VersionUpdate.UpdateListener() {
@@ -431,10 +447,8 @@ public class HttpService extends Service {
 						}
 					}
 				}
-
 				@Override
 				public void finishDownloadApk(String saveFileName) {
-
 				}
 			});
 		}
@@ -443,13 +457,12 @@ public class HttpService extends Service {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		Log.e(TAG, "����  onDestroy");
 		objHandler.removeCallbacks(mTasks);
 		unregisterReceiver(receiver);
 		removeLocationListener();
 		Tel.listen(myListener, PhoneStateListener.LISTEN_NONE);  
-		Intent service_again =new Intent(getApplicationContext(),HttpService.class);
-		startService(service_again);
+//		Intent service_again =new Intent(getApplicationContext(),HttpService.class);
+//		startService(service_again);
 	}
 
 	@Override
@@ -595,14 +608,15 @@ public class HttpService extends Service {
 	 */
 	private Runnable mTasks = new Runnable(){
 		public void run(){
+			isRunning = true;
 			Intent intent = new Intent("MY_HEARTbeat");
-			intent.putExtra("Heart",time_uptate_data);
+			intent.putExtra("Heart",isRunning);
 			sendBroadcast(intent);
 			time_uptate_apk ++;
 			time_uptate_data ++;
 				Log.i(TAG, "1秒定位一次............ " + time_uptate_data);
 				startLocation();
-			if(time_uptate_apk == 3600){
+			if(time_uptate_apk == 7200){
 				time_uptate_apk = 0;
 				if(isNetwork){
 					isUpdate();//一个小时检查更新一次
@@ -616,10 +630,8 @@ public class HttpService extends Service {
 						time_uptate_data = 0;
 					}
 				}
-			}
-			if(time_uptate_data>30){
-//				定位没信号并且没有网络的时候
-				time_uptate_data = 0;
+			}else if(time_uptate_data>30){
+				time_uptate_data = 0;//				定位没信号并且没有网络的时候
 			}
 			objHandler.postDelayed(mTasks, ONE_SECOND);
 		}
@@ -638,7 +650,6 @@ public class HttpService extends Service {
 			}
 			Log.e(TAG, "android api定位------------111-------");
 		}else{
-			// 定位
 			Log.e(TAG, "android api定位------------222-------");
 			locationManager.requestLocationUpdates( LocationManager.GPS_PROVIDER,1000 * 30, 0, gpsListner);
 		}
@@ -771,10 +782,6 @@ public class HttpService extends Service {
 		return jObject;
 	}
 
-
 /**-----------------WebSocket---------------------------------------------------------------------------*/
-
-
-
 
 }

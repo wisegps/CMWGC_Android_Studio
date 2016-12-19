@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/LibMarsdaemon/LibMarsdaemon.iml" filepath="$PROJECT_DIR$/LibMarsdaemon/LibMarsdaemon.iml" />
       <module fileurl="file://$PROJECT_DIR$/Wistorm/Wistorm.iml" filepath="$PROJECT_DIR$/Wistorm/Wistorm.iml" />
       <module fileurl="file://$PROJECT_DIR$/ZhiLianCheWang2.iml" filepath="$PROJECT_DIR$/ZhiLianCheWang2.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
