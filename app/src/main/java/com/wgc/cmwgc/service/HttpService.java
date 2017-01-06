@@ -182,6 +182,7 @@ public class HttpService extends Service {
 				}
 			}
 		}
+
 		public void onStatusChanged(String provider, int status, Bundle extras) {
 			Logger.w("定位状态onStatusChanged ：" + status + " == " + provider);
 		}
@@ -245,45 +246,8 @@ public class HttpService extends Service {
 	/**
 	 * 检查设备是否注册过
 	 */
-	private void checkIsCreate(){	
-		getToken();	
-	}
-
-	int requestNum = 0;
-	/**
-	 * 获取token
-	 */
-	private void getToken(){
-		Log.e(TAG, "获取令牌  ");
-		userApi.getToken(Config.USER_NAME, WEncrypt.MD5(Config.USER_PASS),"2", new OnSuccess() {
-			
-			@Override
-			protected void onSuccess(String response) {
-				// TODO Auto-generated method stub
-				Log.d(TAG, response);
-				requestNum =0;
-				try {
-					JSONObject jsonObject = new JSONObject(response);
-					if("0".equals(jsonObject.getString("status_code"))){
-						Config.ACCESS_TOKEN = jsonObject.getString("access_token");
-						Config.USER_ID = jsonObject.getString("uid");
-						isCreate();	
-					}
-				} catch (JSONException e) {
-					e.printStackTrace();
-				}	
-			}
-		} , new OnFailure() {
-			
-			@Override
-			protected void onFailure(VolleyError error) {
-				// TODO Auto-generated method stub
-				requestNum ++;
-				if(requestNum < 5){
-					getToken();
-				}
-			}
-		});
+	private void checkIsCreate(){
+		isCreate();
 	}
 	
 	/**
@@ -300,7 +264,6 @@ public class HttpService extends Service {
 			protected void onSuccess(String response) {
 				// TODO Auto-generated method stub
 				Log.d(TAG, "服务获取设备返回信息 ：  " + response);
-				requestNum =0;
 				try {
 					JSONObject jsonObject = new JSONObject(response);
 					if(jsonObject.has("data")){
@@ -328,10 +291,6 @@ public class HttpService extends Service {
 			@Override
 			protected void onFailure(VolleyError error) {
 				// TODO Auto-generated method stub
-				requestNum ++;
-				if(requestNum < 5){
-					getToken();
-				}
 			}
 		});
 	}
@@ -376,7 +335,6 @@ public class HttpService extends Service {
 			protected void onSuccess(String response) {
 				// TODO Auto-generated method stub
 				Log.d("TEST_WISTORM", response);
-				requestNum =0;
 				try {
 					JSONObject jsonObject = new JSONObject(response);
 					if ("0".equals(jsonObject.getString("status_code"))) {
@@ -392,10 +350,6 @@ public class HttpService extends Service {
 		}, new OnFailure() {
 			@Override
 			protected void onFailure(VolleyError error) {
-				requestNum ++;
-				if(requestNum < 5){
-					getToken();
-				}
 			}
 		});
 	}
@@ -609,13 +563,15 @@ public class HttpService extends Service {
 	private Runnable mTasks = new Runnable(){
 		public void run(){
 			isRunning = true;
-			Intent intent = new Intent("MY_HEARTbeat");
-			intent.putExtra("Heart",isRunning);
-			sendBroadcast(intent);
 			time_uptate_apk ++;
 			time_uptate_data ++;
 				Log.i(TAG, "1秒定位一次............ " + time_uptate_data);
 				startLocation();
+			if(time_uptate_apk%5==0){
+				Intent intent = new Intent("MY_HEARTbeat");
+				intent.putExtra("Heart",isRunning);
+				sendBroadcast(intent);
+			}
 			if(time_uptate_apk == 7200){
 				time_uptate_apk = 0;
 				if(isNetwork){

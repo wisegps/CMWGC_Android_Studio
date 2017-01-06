@@ -56,6 +56,9 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
+/**
+ * 注意  LeadMainActivity 不能修改，因为关联了 后视镜的 启动图标
+ */
 public class LeadMainActivity extends AppCompatActivity{
 
     static final String TAG = "TEST_CMWGC";
@@ -87,7 +90,8 @@ public class LeadMainActivity extends AppCompatActivity{
         mContext = LeadMainActivity.this;
         checkServiceIsRunning();
         initDevice();
-        getToken();
+//        getToken();
+        checkDeviceIsBinded();
     }
 
     private void initSpf(){
@@ -144,7 +148,7 @@ public class LeadMainActivity extends AppCompatActivity{
     }
 
     private void checkServiceIsRunning() {
-        if (!SystemTools.isWorked(this, "com.wgc.cmwgc.service.HttpService")) {
+        if (!SystemTools.isWorked(this, "com.wgc.cmwgc.service.CoreServer")) {
             Log.e(TAG, "服务没有运行，启动服务");
             Intent intent_service = new Intent(LeadMainActivity.this, CoreServer.class);
             startService(intent_service);
@@ -221,37 +225,38 @@ public class LeadMainActivity extends AppCompatActivity{
             @Override
             protected void onSuccess(String response) {
                 Logger.d("设备是否已经注册：" + response);
+                requestNum = 0;
                 try {
                     JSONObject object = new JSONObject(response);
                     JSONObject object1 = new JSONObject(object.getString("data"));
                     getMileage(object1);
                     if (object1.has("binded")) {
                         if (object1.getBoolean("binded")) {
-                            editor.putBoolean(Config.BINDED,true);
+                            editor.putBoolean(Config.BINDED, true);
                             editor.commit();
-                            if(object1.has("uid")){
-                                if(!TextUtils.isEmpty(object1.getString("uid"))){
+                            if (object1.has("uid")) {
+                                if (!TextUtils.isEmpty(object1.getString("uid"))) {
                                     uidOfdid = object1.getString("uid");
-                                    editor.putString(Config.BINDED_UID,uidOfdid);
+                                    editor.putString(Config.BINDED_UID, uidOfdid);
                                     editor.commit();
                                     getCustomerInfo();
                                     Logger.w("已经绑定===============================");
                                 }
                             }
-                            if(object1.has("bindDate")){
-                                if(!TextUtils.isEmpty(object1.getString("bindDate"))){
-                                   String date[] =  object1.getString("bindDate").toString().split("T");
-                                    editor.putString(Config.BINDED_DATE,date[0]);
+                            if (object1.has("bindDate")) {
+                                if (!TextUtils.isEmpty(object1.getString("bindDate"))) {
+                                    String date[] = object1.getString("bindDate").toString().split("T");
+                                    editor.putString(Config.BINDED_DATE, date[0]);
                                     editor.commit();
                                 }
                             }
                         } else {
-                            editor.putBoolean(Config.BINDED,false);
+                            editor.putBoolean(Config.BINDED, false);
                             editor.commit();
-                            if(object1.has("uid")){
-                                if(!TextUtils.isEmpty(object1.getString("uid"))){
+                            if (object1.has("uid")) {
+                                if (!TextUtils.isEmpty(object1.getString("uid"))) {
                                     uidOfdid = object1.getString("uid");
-                                    editor.putString(Config.BINDED_UID,uidOfdid);
+                                    editor.putString(Config.BINDED_UID, uidOfdid);
                                     editor.commit();
                                     Logger.w("没有绑定===============================");
                                     getServiceInfo(uidOfdid);
@@ -259,58 +264,67 @@ public class LeadMainActivity extends AppCompatActivity{
                             }
                         }
                     } else {
-                        editor.putBoolean(Config.BINDED,false);
+                        editor.putBoolean(Config.BINDED, false);
                         editor.commit();
                     }
-                    if(object1.has("model")){
-                        editor.putString(Config.MODEL,object1.getString("model").toString());
+                    if (object1.has("model")) {
+                        editor.putString(Config.MODEL, object1.getString("model").toString());
                         editor.commit();
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, null);
-    }
-
-
-    int requestNum = 0;
-    /**
-     * 获取token
-     */
-    private void getToken() {
-        Log.e(TAG, "获取令牌  ");
-        userApi.getToken(Config.USER_NAME, WEncrypt.MD5(Config.USER_PASS), "2", new OnSuccess() {
-
-            @Override
-            protected void onSuccess(String response) {
-                // TODO Auto-generated method stub
-                Log.d(TAG, response);
-                requestNum = 0;
-                try {
-                    JSONObject jsonObject = new JSONObject(response);
-                    if ("0".equals(jsonObject.getString("status_code"))) {
-                        Config.ACCESS_TOKEN = jsonObject.getString("access_token");
-                        Config.USER_ID = jsonObject.getString("uid");
-                        checkDeviceIsBinded();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
         }, new OnFailure() {
-
             @Override
             protected void onFailure(VolleyError error) {
-                // TODO Auto-generated method stub
                 requestNum ++;
                 if(requestNum < 5){
-                    getToken();
+                    checkDeviceIsBinded();
                 }
             }
         });
     }
 
+
+    int requestNum = 0;
+//    /**
+//     * 获取token
+//     */
+//    private void getToken() {
+//        Log.e(TAG, "获取令牌  ");
+//        userApi.getToken(Config.USER_NAME, WEncrypt.MD5(Config.USER_PASS), "2", new OnSuccess() {
+//
+//            @Override
+//            protected void onSuccess(String response) {
+//                // TODO Auto-generated method stub
+//                Log.d(TAG, response);
+//                requestNum = 0;
+//                try {
+//                    JSONObject jsonObject = new JSONObject(response);
+//                    if ("0".equals(jsonObject.getString("status_code"))) {
+//                        Config.ACCESS_TOKEN = jsonObject.getString("access_token");
+////                        Config.USER_ID = jsonObject.getString("uid");
+//                        checkDeviceIsBinded();
+//                    }
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }, new OnFailure() {
+//
+//            @Override
+//            protected void onFailure(VolleyError error) {
+//                // TODO Auto-generated method stub
+//                requestNum ++;
+//                if(requestNum < 5){
+//                    getToken();
+//                }
+//            }
+//        });
+//    }
+
+    String pid = "";
     private void getCustomerInfo(){
         HashMap<String, String> params = new HashMap<String, String>();
         params.put("access_token", Config.ACCESS_TOKEN);
@@ -328,7 +342,6 @@ public class LeadMainActivity extends AppCompatActivity{
                         } else {
                             JSONObject object = new JSONObject(jsonObject.getString("data"));
                             if (object.has("parentId")) {
-                                String pid = "";
                                 String strPid = object.getString("parentId");
                                 JSONArray jsonArray = new JSONArray(strPid);
                                 Logger.d("获取 parentid ：" + strPid + "---" + jsonArray.length());
@@ -350,7 +363,7 @@ public class LeadMainActivity extends AppCompatActivity{
             protected void onFailure(VolleyError error) {
                 requestNum ++;
                 if(requestNum < 5){
-                    getToken();
+                    getCustomerInfo();
                 }
             }
         });
@@ -397,7 +410,7 @@ public class LeadMainActivity extends AppCompatActivity{
             protected void onFailure(VolleyError error) {
                 requestNum ++;
                 if(requestNum < 5){
-                    getToken();
+                    getServiceInfo(pid);
                 }
             }
         });

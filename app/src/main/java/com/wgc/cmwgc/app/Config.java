@@ -10,12 +10,12 @@ public class Config {
 	/**定位时间*/
 	public static String gps_time="";
 	/**wistorm token*/
-	public static String ACCESS_TOKEN = "";
+	public static String ACCESS_TOKEN = "3a9557ed4250440ec57b53564e391cb50ada46ae97bc96c6abf0c3a7a3b501c388e0e5763aa116f7c3a93d190f87f11fc3c8c8e3b9c7e26cd3dac0bf04b47841";
 	/**Uid*/
-	public static String USER_ID = "";
+	public static String USER_ID = "763993890020790300";
 	/**用户账号密码*/
-	public static final String USER_NAME = "autogps";
-	public static final String USER_PASS = "123456";
+//	public static final String USER_NAME = "autogps";
+//	public static final String USER_PASS = "123456";
 	/**APK更新的地址*/
 	public static final String UPDATA_APK_URL = "http://o.bibibaba.cn/upgrade?app_name=wgc_rearview";
 	public static String user_info = null;

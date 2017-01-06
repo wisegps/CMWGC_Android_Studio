@@ -1,24 +1,16 @@
 package com.wgc.cmwgc.service;
 
-import android.Manifest;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
-import android.location.GpsSatellite;
-import android.location.GpsStatus;
-import android.location.LocationManager;
-import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.wgc.cmwgc.Until.SystemTools;
-
-import java.util.Iterator;
 
 /**
  * Created by Administrator on 2016/12/19.
@@ -34,6 +26,7 @@ public class CoreServer extends Service {
     private final String START_LOCATION = "start_my_location_service";
     private final String HEART_BEAT = "MY_HEARTbeat";
     public static final String START_UPLPAD ="start_upload_data_incase_time_incorrect";
+    public static final String ERROR_API = "api_error_happen";
 
     private int ONE_MINUTES = 1000 * 60;// five
     private ServiceBroadcast mServiceBroadcast;
@@ -49,6 +42,7 @@ public class CoreServer extends Service {
         IntentFilter filter = new IntentFilter();
         filter.addAction(START_LOCATION);
         filter.addAction(HEART_BEAT);
+        filter.addAction(ERROR_API);
         filter.addAction(Intent.ACTION_SCREEN_ON);
 	    filter.addAction(Intent.ACTION_SCREEN_OFF);
         registerReceiver(mServiceBroadcast, filter);
@@ -107,7 +101,7 @@ public class CoreServer extends Service {
 
     private Runnable mTasks = new Runnable(){
         public void run(){
-            Log.w("LocationService", "核心服务心跳包！！！！！！！！---" );
+            Log.w("LocationService", "核心服务心跳包！！！！！！！！--- "+ HeartBeat);
             if (!SystemTools.isWorked(CoreServer.this, "com.wgc.cmwgc.service.HttpService")) {
                 Log.w("LocationService", "服务没运行" );
                 startLocationService();
@@ -121,6 +115,7 @@ public class CoreServer extends Service {
                 startLocationService();
             }
             if(numIsRun == 3){
+                numIsRun = 0;
                 if(!HeartBeat){
                     HeartBeat = false;
                     startUploadData();

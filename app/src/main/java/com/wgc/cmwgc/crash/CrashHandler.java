@@ -210,7 +210,7 @@ public class CrashHandler implements UncaughtExceptionHandler{
         params.put("access_token", Config.ACCESS_TOKEN);
         params.put("app_key", getAppkey(mContext));
         params.put("bug_report", "错误日志");
-        params.put("account", Config.USER_NAME);
+//        params.put("account", Config.USER_NAME);
         params.put("createdAt", WiStormApi.getCurrentTime());
 
         String fields = "app_key,bug_report,account,objectId,ACL,creator,createdAt,updatedAt";
