@@ -86,11 +86,12 @@ public class LeadMainActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         initWistorm();
+
         initSpf();
         mContext = LeadMainActivity.this;
-        checkServiceIsRunning();
         initDevice();
-//        getToken();
+        checkServiceIsRunning();
+//        initDevice();
         checkDeviceIsBinded();
     }
 
@@ -118,6 +119,8 @@ public class LeadMainActivity extends AppCompatActivity{
         checkAppUpdate();
         tvServiceTel.setText(spf.getString(Config.CUSTOMER_NAME,""));
         tvCustomerServiceTel.setText(spf.getString(Config.CUSTOMER_SERVICE_TEL,""));
+        editor.putString(Config.DID, Config.con_serial);
+        editor.commit();
     }
 
 

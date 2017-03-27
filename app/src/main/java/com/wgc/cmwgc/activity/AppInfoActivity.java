@@ -25,7 +25,10 @@ import com.wgc.cmwgc.R;
 import com.wgc.cmwgc.Until.SystemTools;
 import com.wgc.cmwgc.app.Config;
 import com.wgc.cmwgc.app.MyApplication;
+import com.wgc.cmwgc.event.CheckEvent;
 import com.wgc.cmwgc.service.HttpService;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.Iterator;
 

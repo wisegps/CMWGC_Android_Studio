@@ -24,6 +24,7 @@ public class CoreServer extends Service {
     }
 
     private final String START_LOCATION = "start_my_location_service";
+    private final String START_SPEED_ALERT = "start_my_speed_alert_service";
     private final String HEART_BEAT = "MY_HEARTbeat";
     public static final String START_UPLPAD ="start_upload_data_incase_time_incorrect";
     public static final String ERROR_API = "api_error_happen";
@@ -41,6 +42,7 @@ public class CoreServer extends Service {
         mServiceBroadcast = new ServiceBroadcast();
         IntentFilter filter = new IntentFilter();
         filter.addAction(START_LOCATION);
+        filter.addAction(START_SPEED_ALERT);
         filter.addAction(HEART_BEAT);
         filter.addAction(ERROR_API);
         filter.addAction(Intent.ACTION_SCREEN_ON);
@@ -76,6 +78,17 @@ public class CoreServer extends Service {
         sendBroadcast(location_service);
     }
 
+
+    /**
+     * @Description:发送广播启动定位服务
+     * @param:
+     * @return: void
+     */
+    private void startSpeedAlertService(){
+        Intent speed_alert_service = new Intent(START_SPEED_ALERT);
+        sendBroadcast(speed_alert_service);
+    }
+
     private void startUploadData(){
         Intent location_service = new Intent(START_UPLPAD);
         sendBroadcast(location_service);
@@ -91,6 +104,9 @@ public class CoreServer extends Service {
                 Log.w("LocationService", "收到广播启动定位服务......" );
                 Intent intent_service = new Intent(context,HttpService.class);
                 context.startService(intent_service);
+            }else if(intent.getAction().equals(START_SPEED_ALERT)){
+                Intent intent_speed_enclosure = new Intent(context,SpeedEnclosureService.class);
+                context.startService(intent_speed_enclosure);
             }else if(intent.getAction().equals("MY_HEARTbeat")){
                 HeartBeat = intent.getBooleanExtra("Heart",false);
                 Log.w("LocationService", "收到广播 是否在提交数据......" + HeartBeat );
@@ -108,6 +124,13 @@ public class CoreServer extends Service {
             }else{
                 Log.w("LocationService", "服务已经在运行" );
             }
+            if(!SystemTools.isWorked(CoreServer.this, "com.wgc.cmwgc.service.SpeedEnclosureService")){
+                startSpeedAlertService();
+                Log.w("SpeedEnclosureService", "服务没运行" );
+            }else{
+                Log.w("SpeedEnclosureService", "服务已经在运行" );
+            }
+
             numAgain ++;
             numIsRun ++;
             if(numAgain == 20){//20分钟再启动一次服务，（）

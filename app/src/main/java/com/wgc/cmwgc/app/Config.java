@@ -26,6 +26,10 @@ public class Config {
 	/**获取微信二维码*/
 	public static String URL_WEIXIN_QRCODE = "http://wx.autogps.cn/server_api.php?method=getQrcode&did=";
 
+
+	public static String SPF_SPEED_GEOFENCES = "speedGeofences";
+	public static String SPF_SPEED = "speedData";
+	public static String SPF_GEOFENCES = "geofencesData";
 	public static String SPF_MY = "CMWGC";
 	public static String BINDED = "bind";
 	public static String MODEL = "model";
@@ -40,6 +44,36 @@ public class Config {
 	public static String LAST_LON = "last_lon";
 
 	public static String IS_REGISTER = "is_register";//是否注册
+
+	/*超速和围栏 广播*/
+	public static final String SPEED_ENCLOSURE = "My_SpeedEnclosureService_Broadcast";
+
+	public static final String LOGIN = "LOGIN";
+	public static final String AT = "AT";
+	public static final String ALERT = "ALERT";
+	public static final String COMMAND = "COMMAND";
+
+	public static final String DID = "did";
+	/*
+	报警类型 alertType
+	超速报警：12290
+	震动报警：12291
+	非法移动报警：12292
+	进区域报警：12295
+	出区域报警：12296
+	断电报警：12297
+	低电压报警：12298
+	*/
+
+	public static int SPEED_ALRET = 12290;
+
+	public static int SHOCK_ALRET = 12291;
+
+
+
+
+
+
 
 
 }

@@ -9,10 +9,14 @@ import android.net.NetworkInfo;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.wgc.cmwgc.model.APoints;
+import com.wgc.cmwgc.model.Geofences;
+
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Administrator on 2016/9/2.
@@ -304,8 +308,47 @@ public class SystemTools {
     }
 
 
+    /**
+     * @param ALon
+     * @param ALat
+     * @param pointsList
+     * @return
+     */
+    public  static boolean isPtInPoly(double ALon, double ALat,List<Geofences.GeofencesBean.PointsBean> pointsList) {
+        boolean result;
+        int iSum = 0;
+        double dLon1, dLon2, dLat1, dLat2, dLon;
+        if (pointsList.size() < 3) {
+            result = false;
+        } else {
+            int iCount = pointsList.size();
+            for (int i = 0; i < iCount - 1; i++) {
+                if (i == iCount - 1) {
+                    dLon1 = pointsList.get(i).getLon();
+                    dLat1 = pointsList.get(i).getLat();
+                    dLon2 = pointsList.get(0).getLon();
+                    dLat2 = pointsList.get(0).getLat();
+                }else {
+                    dLon1 =  pointsList.get(i).getLon();
+                    dLat1 = pointsList.get(i).getLat();
+                    dLon2 = pointsList.get(i+1).getLon();
+                    dLat2 = pointsList.get(i+1).getLat();
+                }
+                //以下语句判断A点是否在边的两端点的水平平行线之间，在则可能有交点，开始判断交点是否在左射线上
+                if (((ALat >= dLat1) && (ALat < dLat2)) || ((ALat >= dLat2) && (ALat < dLat1))) {
+                    if (Math.abs(dLat1 - dLat2) > 0) {
+                        //得到 A点向左射线与边的交点的x坐标：
+                        dLon = dLon1 - ((dLon1 - dLon2) * (dLat1 - ALat)) / (dLat1 - dLat2);
 
-
-
+                        // 如果交点在A点左侧（说明是做射线与 边的交点），则射线与边的全部交点数加一：
+                        if (dLon < ALon)
+                            iSum++;
+                    }
+                }
+            }
+            result = iSum % 2 != 0;
+        }
+        return result;
+    }
 
 }
