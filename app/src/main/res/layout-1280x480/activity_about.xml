@@ -42,17 +42,39 @@
 
     </LinearLayout>
 
-    <Button
-        android:id="@+id/tv_check_update"
-        android:layout_width="@dimen/px_450"
-        android:layout_height="@dimen/px_100"
+    <LinearLayout
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="@dimen/px_76"
+        android:layout_marginBottom="@dimen/px_66"
         android:layout_centerHorizontal="true"
-        android:textColor="@color/white"
-        android:textStyle="bold"
-        android:textSize="@dimen/text_middle"
-        android:background="@drawable/selector_btn_bg"
-        android:text="@string/check_update"/>
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal">
+
+        <Button
+            android:id="@+id/tv_check_update"
+            android:layout_width="@dimen/px_450"
+            android:layout_height="@dimen/px_120"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:layout_marginRight="8dp"
+            android:textSize="@dimen/text_middle"
+            android:background="@drawable/selector_btn_bg"
+            android:text="@string/check_update"/>
+
+        <Button
+            android:id="@+id/tv_enable_jt808"
+            android:layout_width="@dimen/px_360"
+            android:layout_height="@dimen/px_120"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:layout_marginLeft="8dp"
+            android:textSize="@dimen/text_middle"
+            android:background="@drawable/selector_btn_bg"
+            android:text="启用部标"/>
+
+    </LinearLayout>
+
 
 </RelativeLayout>
