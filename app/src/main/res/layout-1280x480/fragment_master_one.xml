@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:gravity="center_horizontal"
+    android:layout_height="match_parent"
+    android:background="@drawable/ic_default_app_bg">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
+
+        <ImageView
+            android:layout_centerHorizontal="true"
+            android:layout_width="@dimen/px_200"
+            android:layout_height="@dimen/px_200"
+            android:src="@drawable/ic_location"
+            android:layout_gravity="center_horizontal" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/px_96"
+            android:layout_marginTop="@dimen/px_32"
+            android:layout_marginBottom="@dimen/px_32"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:text="车辆位置随时掌控"/>
+        <TextView
+            android:layout_marginTop="@dimen/px_26"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/px_16"
+            android:layout_marginRight="@dimen/px_16"
+            android:gravity="center_horizontal"
+            android:textSize="@dimen/text_h2_size"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:background="@drawable/shape_white_trans_bg"
+            android:padding="@dimen/px_26"
+            android:text="随时随地查询车辆位置，家人关怀、借车监控，做到心中有数。"/>
+    </LinearLayout>
+</RelativeLayout>

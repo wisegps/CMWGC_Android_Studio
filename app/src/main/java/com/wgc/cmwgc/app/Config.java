@@ -16,8 +16,13 @@ public class Config {
 	/**用户账号密码*/
 //	public static final String USER_NAME = "autogps";
 //	public static final String USER_PASS = "123456";
-	/**APK更新的地址*/
-	public static final String UPDATA_APK_URL = "http://o.bibibaba.cn/upgrade?app_name=wgc_rearview";
+
+	/** API版本和websocket版本 APK更新的地址*/
+//	public static final String UPDATA_APK_URL = "http://o.bibibaba.cn/upgrade?app_name=wgc_rearview";
+
+	/**JT808 协议版本 APK更新地址*/
+	public static final String UPDATA_APK_URL = "http://o.bibibaba.cn/upgrade?app_name=wgc_rearview_jt808";
+
 	public static String user_info = null;
 	/**设备的IMEI号*/
 	public static String con_serial = "";
@@ -25,7 +30,6 @@ public class Config {
 	public static String con_iccid = "";
 	/**获取微信二维码*/
 	public static String URL_WEIXIN_QRCODE = "http://wx.autogps.cn/server_api.php?method=getQrcode&did=";
-
 
 	public static String SPF_SPEED_GEOFENCES = "speedGeofences";
 	public static String SPF_SPEED = "speedData";
@@ -48,6 +52,7 @@ public class Config {
 	/*超速和围栏 广播*/
 	public static final String SPEED_ENCLOSURE = "My_SpeedEnclosureService_Broadcast";
 
+
 	public static final String LOGIN = "LOGIN";
 	public static final String AT = "AT";
 	public static final String ALERT = "ALERT";
@@ -68,6 +73,10 @@ public class Config {
 	public static int SPEED_ALRET = 12290;
 
 	public static int SHOCK_ALRET = 12291;
+
+	public static final String SP_SERVICE_IP = "JT808serviceIP";
+	public static final String SP_SERVICE_PORT = "JT808servicePort";
+
 
 
 

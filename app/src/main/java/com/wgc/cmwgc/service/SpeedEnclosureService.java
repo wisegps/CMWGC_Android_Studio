@@ -28,7 +28,7 @@ import java.nio.channels.UnresolvedAddressException;
 
 
 /**
- * 功能： 超速报警和地理围栏检查服务
+ * 功能： 提交到公司后台，超速报警和地理围栏检查服务
  * 作者： Administrator
  * 日期： 2017/3/14 09:55
  * 邮箱： descriable
@@ -59,7 +59,7 @@ public class SpeedEnclosureService extends Service {
     private String status="[]";
     private String alerts="[]";
     private String did;
-
+    private boolean isRunning = false;
     private boolean isFirst = true;
 
 
@@ -126,7 +126,7 @@ public class SpeedEnclosureService extends Service {
                         if(type.equals(Config.LOGIN)){
                             parseLogin(object);
                         }else if(type.equals(Config.AT)){
-                            parseAT(object);
+                            parseAT(object);//解析链路检查返回数据 {"msgId":71,"type":"AT","status":"OK"}
                         }else if(type.equals(Config.ALERT)){
                             parseAlert(object);
                         }else if(type.equals(Config.COMMAND)){
@@ -177,12 +177,19 @@ public class SpeedEnclosureService extends Service {
      * @param object
      */
     private void parseAT(JSONObject object){
+//        {"msgId":71,"type":"AT","status":"OK"}
         try {
             String status = object.getString("status");
             if(status.equals("OK")){
                 checkConnectResponseCount = 0;//检查链路有回复
                 Log.d(TAG,"webSocket 链路检查情况 ：" + "OK" );
+                /*发送广播给 软件状态页面 ，显示状态*/
+                isRunning = true;
+                Intent intent = new Intent("MY_Websocket_HEARTbeat");
+                intent.putExtra("websocket_heart",isRunning);
+                sendBroadcast(intent);
             }
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -300,7 +307,7 @@ public class SpeedEnclosureService extends Service {
     }
 
     /**
-     * 定时执行
+     * 定时执行： 定时一秒执行一次
      */
     private Runnable mTasks = new Runnable() {
         @Override
@@ -318,11 +325,11 @@ public class SpeedEnclosureService extends Service {
             }
             if (msgId==Integer.MAX_VALUE)
                 msgId=0;
-            checkLoginResponse();
-            checkConnection();
-            checkConnectResponse();
-            checkSpeedAlert();
-            sendLocation();
+            checkLoginResponse();//检查有没有登录
+            checkConnection();//每隔十秒发送链路检查
+            checkConnectResponse();//检查连接有没有返回
+            checkSpeedAlert();/* 超速报警*/
+            sendLocation();/*30秒发送一次定位数据给后台*/
         }
         objHandler.postDelayed(mTasks, TIME);
         }
@@ -335,7 +342,7 @@ public class SpeedEnclosureService extends Service {
             return;
         }
         locationCount++;
-        if(locationCount==30){
+        if(locationCount==30){/*每隔30秒发送一次定位数据给后台*/
             locationCount=0;
             if (isConnected){
                 String msg = getLocationJSON(msgId,alerts).toString();
@@ -372,6 +379,10 @@ public class SpeedEnclosureService extends Service {
         checkConnectResponseCount++;
         if (checkConnectResponseCount>15){
             checkConnectResponseCount=0;
+            isRunning = false;
+            Intent intent = new Intent("MY_Websocket_HEARTbeat");
+            intent.putExtra("websocket_heart",isRunning);
+            sendBroadcast(intent);
             Log.e(TAG,"服务端没有回复，需断开重连");
             retryCheckConnectThreeTime();
         }
@@ -401,6 +412,7 @@ public class SpeedEnclosureService extends Service {
 
     private void login(){
         String msg = getLoginJSON(msgId).toString();
+        Log.w(TAG,"登录信息....... " + msg);
         if (isConnected){
             sendMsg(msg);
             msgId++;
@@ -453,6 +465,7 @@ public class SpeedEnclosureService extends Service {
             if(!bufferAlert.equals(alerts)){
                 spHandler.postDelayed(speedRunnable,3000);
             }
+
             bufferAlert = alerts;
         }
     }
@@ -462,7 +475,7 @@ public class SpeedEnclosureService extends Service {
         @Override
         public void run() {
             postSpeedAlertCount++;
-            if(postSpeedAlertCount<3){
+            if(postSpeedAlertCount<3){/*发送三次请求 如果请求成功了 就remove 这个线程*/
                 sendSpeedAlert();
                 spHandler.postDelayed(speedRunnable,3000);
             }else {

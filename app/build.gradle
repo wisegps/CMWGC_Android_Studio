@@ -7,16 +7,16 @@ android {
 
     defaultConfig {
         applicationId "com.wgc.cmwgc"
-        minSdkVersion 15
+        minSdkVersion 16
         targetSdkVersion 24
-        versionCode 25
-        versionName "2.13"
+        versionCode 26
+        versionName "2.14"
     }
-//    repositories {
-//        maven {
-//            url "https://jitpack.io"
-//        }
-//    }
+    repositories {
+        maven {
+            url "https://jitpack.io"
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
@@ -48,7 +48,10 @@ dependencies {
 
     //websocket
     compile 'org.java-websocket:Java-WebSocket:1.3.0'
+    //http://blog.csdn.net/ciqing123/article/details/52947155?locationNum=16&fps=1
     //eventbus3.0
     compile 'org.greenrobot:eventbus:3.0.0'
     compile 'com.google.code.gson:gson:2.7'
+
+    compile 'com.github.vilyever:AndroidSocketClient:3.0.3'
 }

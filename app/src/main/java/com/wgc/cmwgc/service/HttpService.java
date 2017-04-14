@@ -1,6 +1,7 @@
 package com.wgc.cmwgc.service;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -47,10 +48,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
 /**
+ * 三十秒定位 数据处理
  * 2016-09-12
  */
 public class HttpService extends Service {
@@ -135,6 +139,7 @@ public class HttpService extends Service {
 					gpsType = 1;
 				}
 			}else{
+				/*计算两点距离*/
 				double dis = SystemTools.getDistance(latt,lonn,location.getLatitude(),location.getLongitude());
 				latt = location.getLatitude();
 				lonn = location.getLongitude();
@@ -184,7 +189,7 @@ public class HttpService extends Service {
 		}
 		public void onProviderDisabled(String provider) {
 			Logger.w("定位状态onProviderDisabled ：" + " == " + provider);
-			objHandler.removeCallbacks(mTasks);//休眠的时候会执行
+//			objHandler.removeCallbacks(mTasks);//休眠的时候会执行
 		}
 	};
 
@@ -207,6 +212,7 @@ public class HttpService extends Service {
 			mileage = mileage + d ;//里程累计
 			lastD = d;
 		}
+		/*汽车里程*/
 		editor.putString(Config.TOTAL_MILEAGE,String.valueOf(mileage));
 		editor.putString(Config.LAST_LON,String.valueOf(lonn));
 		editor.putString(Config.LAST_LAT,String.valueOf(latt));
@@ -257,7 +263,7 @@ public class HttpService extends Service {
 	 * 检查设备是否注册过
 	 */
 	private void checkIsCreate(){
-		Logger.d("==== 是否注册=== " + isRegister);
+//		Logger.d("==== 是否注册=== " + isRegister);
 		if(isRegister){
 			go();
 		}else{
@@ -271,10 +277,10 @@ public class HttpService extends Service {
 	private void isCreate(){
 		HashMap<String, String> params = new HashMap<String, String>();
 		params.put("access_token", Config.ACCESS_TOKEN);
-		params.put("did", Config.con_serial);
+		params.put("did", "4594328085393400");//459432808539341 Config.con_serial
 		String fields = "did,activeGpsData";
 		deviceApi.get(params, fields, new OnSuccess() {
-			
+
 			@Override
 			protected void onSuccess(String response) {
 				// TODO Auto-generated method stub
@@ -282,8 +288,10 @@ public class HttpService extends Service {
 				try {
 					JSONObject jsonObject = new JSONObject(response);
 					if(jsonObject.has("data")){
-						JSONObject object1 = new JSONObject(jsonObject.getString("data"));
-						getMileage(object1);
+						if(!jsonObject.isNull("data")){
+							JSONObject object1 = new JSONObject(jsonObject.getString("data"));
+							getMileage(object1);
+						}
 					}
 					if("0".equals(jsonObject.getString("status_code"))){
 						if(jsonObject.isNull("data")){
@@ -299,10 +307,10 @@ public class HttpService extends Service {
 					}
 				} catch (JSONException e) {
 					e.printStackTrace();
-				}	
+				}
 			}
 		}, new OnFailure() {
-			
+
 			@Override
 			protected void onFailure(VolleyError error) {
 				// TODO Auto-generated method stub
@@ -353,6 +361,11 @@ public class HttpService extends Service {
 				try {
 					JSONObject jsonObject = new JSONObject(response);
 					if ("0".equals(jsonObject.getString("status_code"))) {
+						editor.putBoolean(Config.IS_REGISTER, true);
+						editor.commit();
+						isRegister = true;
+						go();
+					}else if("15".equals(jsonObject.getString("status_code"))){
 						editor.putBoolean(Config.IS_REGISTER, true);
 						editor.commit();
 						isRegister = true;
@@ -474,7 +487,7 @@ public class HttpService extends Service {
 	int time_uptate_apk  = 0;
 	int time_uptate_data = 0;
 	/**
-	 * 定时提交数据
+	 * 定时提交数据  ；每隔一秒执行
 	 */
 	private Runnable mTasks = new Runnable(){
 		public void run(){
@@ -483,6 +496,7 @@ public class HttpService extends Service {
 			time_uptate_data ++;
 				startLocation();
 			if(time_uptate_apk%5==0){
+				Log.d(TAG,"-------- " + time_uptate_apk);
 				Intent intent = new Intent("MY_HEARTbeat");
 				intent.putExtra("Heart",isRunning);
 				sendBroadcast(intent);
@@ -523,6 +537,19 @@ public class HttpService extends Service {
 		intent.putExtra("gpsFlag",gpsType);
 		intent.putExtra("status",status);
 		sendBroadcast(intent);
+	}
+
+	/**
+	 *
+	 * getCurrentTime 获取当前时间
+	 *
+	 * @return
+	 */
+	@SuppressLint("SimpleDateFormat") public static String getCurrentTime() {
+		Date date = new Date(System.currentTimeMillis());
+		SimpleDateFormat sdf = new SimpleDateFormat("yy-MM-dd-hh-mm-ss");
+		String str = sdf.format(date);
+		return str;
 	}
 
 

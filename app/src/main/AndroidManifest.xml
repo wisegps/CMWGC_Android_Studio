@@ -91,6 +91,13 @@
             android:theme="@style/AppTheme.NoActionBar"
             android:label="@string/app_info"/>
 
+
+        <activity android:name=".activity.JT808SettingActivity"
+            android:screenOrientation="landscape"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:label="@string/app_info"/>
+
+
         <!-- ******************************************************************* -->
         <!-- 高德地图  本机： 279d240f0c19c181144e650a611ff10e
         	原版：95cf7a831064bf4fd6d2d01d894bc7fb -->
@@ -130,6 +137,8 @@
 
 
         <service android:name=".service.SpeedEnclosureService"/>
+
+        <service android:name=".service.BeiDouService"/>
 
         <receiver android:name=".receiver.BootUpReceiver">
             <intent-filter>

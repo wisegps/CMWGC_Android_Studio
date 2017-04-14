@@ -86,7 +86,9 @@ public class DeviceActivity extends AppCompatActivity {
         HashMap<String, String> params = new HashMap<String, String>();
         params.put("access_token", Config.ACCESS_TOKEN);
         params.put("did",Config.con_serial);//459432808550306 Config.con_serial 459432808108543
+
         String fields = "did,binded,bindDate,uid,model";
+
         if(!TextUtils.isEmpty(Config.con_serial))
             deviceApi.get(params, fields, new OnSuccess() {
                 @Override

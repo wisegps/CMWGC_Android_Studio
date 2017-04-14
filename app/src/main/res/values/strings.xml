@@ -11,6 +11,10 @@
     <string name="car_team">车队管理</string>
     <string name="app_info">软件信息</string>
 
+    <string name="service_ip">服务器IP</string>
+    <string name="service_port">服务器端口</string>
 
+    <string name="default_ip">222.81.173.199</string>
+    <string name="default_port">6973</string>
 
 </resources>

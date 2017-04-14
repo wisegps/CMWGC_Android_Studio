@@ -14,8 +14,11 @@ import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.TextView;
 import com.android.volley.VolleyError;
 import com.orhanobut.logger.Logger;
@@ -111,9 +114,11 @@ public class LeadMainActivity extends AppCompatActivity{
     }
 
     private void initDevice() {
+        /*读取设备的 id  和 sim卡号码*/
         Tel = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         Config.con_serial = Tel.getDeviceId();
         Config.con_iccid = Tel.getSimSerialNumber();
+
         Logger.d("ICCID: " + Config.con_iccid);
         updata = new VersionUpdate(this);
         checkAppUpdate();
@@ -121,6 +126,26 @@ public class LeadMainActivity extends AppCompatActivity{
         tvCustomerServiceTel.setText(spf.getString(Config.CUSTOMER_SERVICE_TEL,""));
         editor.putString(Config.DID, Config.con_serial);
         editor.commit();
+
+
+
+
+        // 方法1 Android获得屏幕的宽和高
+        WindowManager windowManager = getWindowManager();
+        Display display = windowManager.getDefaultDisplay();
+        int screenWidth = screenWidth = display.getWidth();
+        int screenHeight = screenHeight = display.getHeight();
+
+        // 方法2
+        DisplayMetrics dm = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(dm);
+
+        float width=dm.widthPixels*dm.density;
+        float height=dm.heightPixels*dm.density;
+
+        Logger.d(" ----------- " + "First method:"+dm.toString()+"\n"+"Second method:"+"Y="+screenWidth+";X="+screenHeight);
+
+
     }
 
 
@@ -221,7 +246,7 @@ public class LeadMainActivity extends AppCompatActivity{
     private void checkDeviceIsBinded() {
         HashMap<String, String> params = new HashMap<String, String>();
         params.put("access_token", Config.ACCESS_TOKEN);
-        params.put("did",Config.con_serial);//459432808550306 Config.con_serial 459432808108543 459432808117288
+        params.put("did",Config.con_serial);// 459432808539341 459432808550306 Config.con_serial 459432808108543 459432808117288
         String fields = "did,binded,bindDate,uid,model,activeGpsData,params";
         if(!TextUtils.isEmpty(Config.con_serial))
         deviceApi.get(params, fields, new OnSuccess() {

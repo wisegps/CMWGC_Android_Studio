@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rl_register_info"
+    android:visibility="gone"
+    android:layout_width="match_parent"
+    android:gravity="center_horizontal"
+    android:layout_height="match_parent"
+    android:background="@drawable/ic_default_app_bg">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_h1_size"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:text="注册信息"/>
+        <TextView
+            android:id="@+id/tv_account"
+            android:layout_marginTop="@dimen/px_70"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_h2_size"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:text="注册用户："/>
+        <TextView
+            android:id="@+id/tv_date"
+            android:layout_marginTop="@dimen/px_56"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_h2_size"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:text="注册日期：        "/>
+        <Button
+            android:id="@+id/tv_unbind"
+            android:layout_marginTop="@dimen/px_60"
+            android:layout_width="@dimen/px_450"
+            android:layout_height="@dimen/px_120"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:textSize="@dimen/text_middle"
+            android:background="@drawable/selector_btn_bg"
+            android:text="解除绑定"/>
+    </LinearLayout>
+</RelativeLayout>

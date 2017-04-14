@@ -21,6 +21,7 @@ import android.util.Log;
 import android.widget.TextView;
 
 import com.orhanobut.logger.Logger;
+import com.wgc.cmwgc.JT808.JT808MSG;
 import com.wgc.cmwgc.R;
 import com.wgc.cmwgc.Until.SystemTools;
 import com.wgc.cmwgc.app.Config;
@@ -36,7 +37,7 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 /**
- * 隐藏app 记录软件状态
+ * 隐藏页面 记录软件状态
  * Created by Administrator on 2016/12/6.
  */
 public class AppInfoActivity extends AppCompatActivity {
@@ -49,19 +50,29 @@ public class AppInfoActivity extends AppCompatActivity {
     @Bind(R.id.tv_app_info)
     TextView tvAppInfo;
 
-    private String isServiceRunning = "否";
-    private String isNetworkAvailable = "否";
+    private boolean isServiceRunning;
+    private boolean isNetworkAvailable;
     private String isGpsAvailable = "否";
     private int numOfSatellites = 0;
     private int useOfSatellites = 0;
     private boolean HeartBeat = false;
+    private boolean WebSocketHeartBeat = false;
+    private boolean JT808HeartBeat = false;
+
+    private SharedPreferences spf;
+    private SharedPreferences.Editor editor;
+
     private int versionCode=0;
+    private String ip = "";
+    private String port = "";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_info);
         ButterKnife.bind(this);
+        initSP();
         initBorcast();
         locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -74,12 +85,27 @@ public class AppInfoActivity extends AppCompatActivity {
     }
 
 
+    private void initSP() {
+        spf = getSharedPreferences(Config.SPF_MY,MODE_PRIVATE);
+        editor = spf.edit();
+
+        ip = spf.getString( Config.SP_SERVICE_IP, "");
+        port = spf.getString( Config.SP_SERVICE_PORT, "");
+    }
+
+
+
+
+
+
     /**
      * 注册广播
      */
     private void initBorcast(){
         IntentFilter filter = new IntentFilter();
         filter.addAction("MY_HEARTbeat");
+        filter.addAction("MY_Websocket_HEARTbeat");
+        filter.addAction("MY_JT808_HEARTbeat");
         registerReceiver(receiver, filter);
     }
 
@@ -90,8 +116,16 @@ public class AppInfoActivity extends AppCompatActivity {
 
         @Override
         public void onReceive(final Context context, final Intent intent) {
-            HeartBeat = intent.getBooleanExtra("Heart",false);
-            Log.w(TAG,"收到广播 ：" + HeartBeat);
+            if(intent.getAction().equals("MY_HEARTbeat")){
+                HeartBeat = intent.getBooleanExtra("Heart",false);
+                Log.w(TAG,"收到定位广播 ：" + HeartBeat );
+            }else if(intent.getAction().equals("MY_Websocket_HEARTbeat")){
+                WebSocketHeartBeat = intent.getBooleanExtra("websocket_heart",false);
+                Log.w(TAG,"收到Websocket广播 ："  +" -- " +  WebSocketHeartBeat);
+            }else if(intent.getAction().equals("MY_JT808_HEARTbeat")){
+                Log.w(TAG,"收到JT808 服务广播 ："  +" -- " +  WebSocketHeartBeat);
+                JT808HeartBeat = intent.getBooleanExtra("jt_heart",false);
+            }
         }
     };
 
@@ -110,25 +144,32 @@ public class AppInfoActivity extends AppCompatActivity {
     private void checkAllStatus() {
         versionCode = SystemTools.getVersionCode(AppInfoActivity.this);
         if (!SystemTools.isWorked(this, "com.wgc.cmwgc.service.HttpService")) {
-            isServiceRunning = "否";
+            isServiceRunning = false;
         }else{
-            isServiceRunning = "是";
+            isServiceRunning = true;
         }
         if (SystemTools.isNetworkAvailable(AppInfoActivity.this)){
-            isNetworkAvailable = "是";
+            isNetworkAvailable = true;
         }else{
-            isNetworkAvailable = "否";
+            isNetworkAvailable = false;
         }
         if(getGPSState(AppInfoActivity.this)){
             isGpsAvailable = "是";
         }else{
             isGpsAvailable = "否";
         }
+
+
+        ip = spf.getString( Config.SP_SERVICE_IP, "");
+        port = spf.getString( Config.SP_SERVICE_PORT, "");
+
+
         Log.w(TAG, "服务是否在运行：" + isServiceRunning + "\n"
                 +"网络是否可用：" + isNetworkAvailable + "\n"
                 + "GPS是否打开：" + isGpsAvailable + "\n"
                 + "可见卫星数：" + numOfSatellites + "\n"
-                + "心跳包数据：" + HeartBeat + "\n"
+                + "定位心跳包：" + HeartBeat + "\n"
+                + "WebSocket链路：" + WebSocketHeartBeat + "\n"
                 + "版本号：" + versionCode
         );
     }
@@ -155,19 +196,63 @@ public class AppInfoActivity extends AppCompatActivity {
     };
 
     private void updateUi(){
+        String dingwei = "";
+        String lianlu = "";
+        String service = "";
+        String network = "";
+
+        String jtlianlu="";
+
+
+        if(HeartBeat){
+            dingwei = "正常";
+        }else {
+            dingwei = "不正常";
+        }
+        if(WebSocketHeartBeat){
+            lianlu = "正常";
+        }else {
+            lianlu = "不正常";
+        }
+        if(isServiceRunning){
+            service = "正常";
+        }else {
+            service = "不正常";
+        }
+        if(isNetworkAvailable){
+            network = "正常";
+        }else {
+            network = "不正常";
+        }
+
+
+        if(JT808HeartBeat){
+            jtlianlu = "正常";
+        }else{
+            jtlianlu = "不正常";
+        }
+
         StringBuilder sb = new StringBuilder();
-        sb.append("服务是否运行 : ");
-        sb.append(isServiceRunning);
-        sb.append("\n网络是否可用 : ");
-        sb.append(isNetworkAvailable);
+        sb.append("IP : ");
+        sb.append(ip);
+        sb.append("\n端口 : ");
+        sb.append(port);
+        sb.append("\n服务 : ");
+        sb.append(service);
+        sb.append("\n网络 : ");
+        sb.append(network);
         sb.append("\n定位是否打开 : ");
         sb.append(isGpsAvailable);
         sb.append("\n可见卫星数 : ");
         sb.append(numOfSatellites);
         sb.append("\n连接卫星数 : ");
         sb.append(useOfSatellites);
-        sb.append("\n心跳包数据 : ");
-        sb.append(HeartBeat);
+        sb.append("\n定位 : ");
+        sb.append(dingwei);
+        sb.append("\n默认链路 : ");
+        sb.append(lianlu);
+        sb.append("\n部标链路 : ");
+        sb.append(jtlianlu);
         sb.append("\n版本号 : ");
         sb.append(versionCode);
         sb.append("\n时间 ：");

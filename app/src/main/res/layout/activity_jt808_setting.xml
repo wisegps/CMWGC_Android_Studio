@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/layout_ip"
+        android:layout_marginTop="50dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="120dp"
+        android:layout_marginRight="120dp">
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/edit_ip"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/service_ip"/>
+
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/layout_port"
+        android:layout_below="@id/layout_ip"
+        android:layout_marginTop="30dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="120dp"
+        android:layout_marginRight="120dp">
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/edit_port"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/service_port"/>
+
+    </android.support.design.widget.TextInputLayout>
+
+
+    <Button
+        android:layout_marginTop="30dp"
+        android:id="@+id/btn_jt_enable"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="保存并启用"
+        android:textSize="24sp"
+        android:textColor="@color/white"
+        android:padding="@dimen/px_16"
+        android:layout_gravity="center_horizontal"
+        android:background="@drawable/selector_btn_bg"/>
+
+</LinearLayout>
