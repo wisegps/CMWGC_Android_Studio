@@ -6,7 +6,7 @@ import java.util.List;
 public class BitOperator {
 
 	/**
-	 * 把一个整形该为byte
+	 * 把一个整形改为byte
 	 * 
 	 * @param value
 	 * @return
@@ -17,7 +17,7 @@ public class BitOperator {
 	}
 
 	/**
-	 * 把一个整形该为1位的byte数组
+	 * 把一个整形改为1位的byte数组
 	 * 
 	 * @param value
 	 * @return

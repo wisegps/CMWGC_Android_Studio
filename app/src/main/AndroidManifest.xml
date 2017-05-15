@@ -129,6 +129,12 @@
             android:exported="true"
             android:process=":process1">
         </service>
+
+        <service android:name=".service.CoreServerAgin"
+            android:enabled="true"
+            android:exported="true"
+            android:process=":process1">
+        </service>
         <receiver android:name=".service.Receiver1" android:process=":process1"/>
         <service android:name=".service.Service2" android:process=":process2"/>
         <receiver android:name=".service.Receiver2" android:process=":process2"/>
@@ -141,8 +147,12 @@
         <service android:name=".service.BeiDouService"/>
 
         <receiver android:name=".receiver.BootUpReceiver">
-            <intent-filter>
+            <intent-filter android:priority="2147483647" ><!--优先级加最高-->
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <!-- 解锁完成后会调用 -->
+                <action android:name="android.intent.action.USER_PRESENT" />
+                <!-- 监听情景切换 -->
+                <action android:name="android.media.RINGER_MODE_CHANGED" />
             </intent-filter>
         </receiver>
 

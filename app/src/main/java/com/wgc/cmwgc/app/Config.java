@@ -21,7 +21,10 @@ public class Config {
 //	public static final String UPDATA_APK_URL = "http://o.bibibaba.cn/upgrade?app_name=wgc_rearview";
 
 	/**JT808 协议版本 APK更新地址*/
-	public static final String UPDATA_APK_URL = "http://o.bibibaba.cn/upgrade?app_name=wgc_rearview_jt808";
+	//http://o.bibibaba.cn/upgrade?app_name=wgc_rearview
+
+//	public static final String UPDATA_APK_URL = "http://o.bibibaba.cn/upgrade?app_name=wgc_rearview_jt808";
+	public static final String UPDATA_APK_URL = "http://o.bibibaba.cn/upgrade?app_name=wgc_rearview";
 
 	public static String user_info = null;
 	/**设备的IMEI号*/
@@ -43,7 +46,8 @@ public class Config {
 	public static String CUSTOMER_NAME = "customer_name";
 	public static String CUSTOMER_SERVICE_TEL = "customer_service_tel";
 	public static String TOTAL_MILEAGE = "total_mileage";//里程
-
+	public static String SPEED = "speed";//速度
+	public static String BEARING = "bearing";//方向
 	public static String LAST_LAT = "last_lat";
 	public static String LAST_LON = "last_lon";
 
@@ -51,7 +55,7 @@ public class Config {
 
 	/*超速和围栏 广播*/
 	public static final String SPEED_ENCLOSURE = "My_SpeedEnclosureService_Broadcast";
-
+	public static final String ALARMKEY = "com.android.internal.policy.impl.alarmkey";
 
 	public static final String LOGIN = "LOGIN";
 	public static final String AT = "AT";

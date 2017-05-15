@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.orhanobut.logger.Logger;
 import com.wgc.cmwgc.app.Config;
@@ -41,7 +42,8 @@ public class SpeedEnclosureService extends Service {
     public static int SPEED_ALRET = 12290;
     private Handler objHandler = new Handler();
     private WebSocketClient mWebSocketClient;//WebSocketClient
-    private final String address = "ws://m2m.chease.cn:39977";
+//    private final String address = "ws://m2m.chease.cn:39977";
+    private final String address = "ws://123.207.194.175:39977";
 //    private final String address = "ws://192.168.3.86:39966";
     private SharedPreferences spf;
     private SharedPreferences.Editor editor;
@@ -61,6 +63,7 @@ public class SpeedEnclosureService extends Service {
     private String did;
     private boolean isRunning = false;
     private boolean isFirst = true;
+    private int alarmkey = 1;//紧急报警
 
 
 
@@ -110,9 +113,9 @@ public class SpeedEnclosureService extends Service {
             mWebSocketClient = new WebSocketClient(new URI(address)) {
                 @Override
                 public void onOpen(ServerHandshake serverHandshake) {//连接成功
-                    Log.d(TAG,"webSocket 连接成功" );
                     isConnected = true;
                     login();
+                    Log.e(TAG,"webSocket 连接登录成功！" );
                 }
 
                 @Override
@@ -143,7 +146,7 @@ public class SpeedEnclosureService extends Service {
                 public void onClose(int i, String s, boolean remote) {
                     //连接断开，remote判定是客户端断开还是服务端断开
                     isConnected= false;
-                    Logger.e(TAG,"webSocket  onClose " );
+                    Logger.e(TAG,"webSocket_onClose " );
                 }
 
                 @Override
@@ -238,8 +241,10 @@ public class SpeedEnclosureService extends Service {
         new Thread(){
             @Override
             public void run() {
-                if(mWebSocketClient!=null)
+                if(mWebSocketClient!=null){
                     mWebSocketClient.connect();
+                Log.e(TAG, "webSocket连接成功！" );
+                }
             }
         }.start();
     }
@@ -251,6 +256,7 @@ public class SpeedEnclosureService extends Service {
         try {
             if(mWebSocketClient!=null)
                 mWebSocketClient.close();
+            Log.e(TAG, "webSocket断开连接！" );
         }
         catch(Exception e) {
             e.printStackTrace();
@@ -277,6 +283,8 @@ public class SpeedEnclosureService extends Service {
     private void initBorcast(){
         IntentFilter filter = new IntentFilter();
         filter.addAction(Config.SPEED_ENCLOSURE);
+        filter.addAction(Config.ALARMKEY);
+        filter.addAction("MY_Websocket_HEARTbeat");
         registerReceiver(receiver, filter);
     }
 
@@ -287,14 +295,23 @@ public class SpeedEnclosureService extends Service {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            lon = Double.valueOf(intent.getStringExtra("lon"));
-            lat = Double.valueOf(intent.getStringExtra("lat"));
-            gpsTime = intent.getStringExtra("gpsTime");
-            speedGPS = intent.getIntExtra("speed",0);
-            direct = intent.getIntExtra("direct",0);
-            mileage =  Double.valueOf(intent.getStringExtra("mileage"));
-            status = intent.getStringExtra("status");
-            gpsFlag = intent.getIntExtra("gpsFlag",1);
+            if (intent.getAction().equals(Config.SPEED_ENCLOSURE)) {
+                lon = Double.valueOf(intent.getStringExtra("lon"));
+                lat = Double.valueOf(intent.getStringExtra("lat"));
+                gpsTime = intent.getStringExtra("gpsTime");
+                speedGPS = intent.getIntExtra("speed", 0);
+                direct = intent.getIntExtra("direct", 0);
+                alerts = intent.getStringExtra("alerts");
+                mileage = Double.valueOf(intent.getStringExtra("mileage"));
+                status = intent.getStringExtra("status");
+                gpsFlag = intent.getIntExtra("gpsFlag", 1);
+                alarmkey = intent.getIntExtra("alarmkey", 1);
+            }
+
+            if (intent.getAction().equals(Config.ALARMKEY)){
+                alarmkey = intent.getIntExtra("alarmkey",alarmkey);
+                sendAlarmkey();//紧急报警
+            }
         }
     };
 
@@ -330,6 +347,9 @@ public class SpeedEnclosureService extends Service {
             checkConnectResponse();//检查连接有没有返回
             checkSpeedAlert();/* 超速报警*/
             sendLocation();/*30秒发送一次定位数据给后台*/
+
+
+//            Log.e(TAG,"我们每一秒都在执行--");
         }
         objHandler.postDelayed(mTasks, TIME);
         }
@@ -343,32 +363,45 @@ public class SpeedEnclosureService extends Service {
         }
         locationCount++;
         if(locationCount==30){/*每隔30秒发送一次定位数据给后台*/
-            locationCount=0;
+
             if (isConnected){
                 String msg = getLocationJSON(msgId,alerts).toString();
                 Log.w(TAG, "------------ " + msg);
                 sendMsg(msg);
+                Log.e(TAG,"webSocket--30秒上传的数据--"+ msg+"");
                 msgId++;
             }
+            locationCount=0;
         }
     }
 
+    private void sendAlarmkey(){
+            if (isConnected){
+                String msg = getAlarmkeyJSON(msgId,alerts).toString();
+                Log.e(TAG, "报警上传到本地： " + msg);
+                sendMsg(msg);
+                msgId++;
+            }
+    }
 /*------------------------以下是链路检查，链路检查没有回复 就重连三次，重发三次没回复 断开重连--------------------------------------------------------------------------------*/
     /**
      * 每隔十秒检查一次链路
      */
+//    int retryCheckConnectCount;
     int connectCount;
     private void checkConnection(){
         connectCount++;
         if(connectCount==10){
-            connectCount=0;
-            Log.w(TAG, isConnected + " -----  十秒检查链路 --------- " + msgId);
+            Log.e(TAG, isConnected + " -----  十秒检查链路 --------- " + msgId);
             String msg = getCheckJSON(msgId).toString();
             if (isConnected){
                 sendMsg(msg);
                 msgId++;
+
             }
+            connectCount=0;
         }
+
     }
 
     /**
@@ -377,14 +410,21 @@ public class SpeedEnclosureService extends Service {
     int checkConnectResponseCount;
     private void checkConnectResponse(){
         checkConnectResponseCount++;
-        if (checkConnectResponseCount>15){
-            checkConnectResponseCount=0;
+        Log.e(TAG, "检查中。。。。。。。。"+checkConnectResponseCount+"");
+
+        if (checkConnectResponseCount  > 10){
+
+            Log.e(TAG, "断开从新连接。。。。。。。。");
+        }
+        if (checkConnectResponseCount > 15){
+
             isRunning = false;
             Intent intent = new Intent("MY_Websocket_HEARTbeat");
             intent.putExtra("websocket_heart",isRunning);
             sendBroadcast(intent);
             Log.e(TAG,"服务端没有回复，需断开重连");
             retryCheckConnectThreeTime();
+            checkConnectResponseCount=0;
         }
     }
 
@@ -393,18 +433,25 @@ public class SpeedEnclosureService extends Service {
      */
     int retryCheckConnectCount;
     private void retryCheckConnectThreeTime(){
-        retryCheckConnectCount++;
         checkConnection();
+        retryCheckConnectCount++;
+        Log.e(TAG,"没有回复的次数----"+retryCheckConnectCount+"");
+
         if (retryCheckConnectCount==3){//3次没回复就重新断开连接
-            retryCheckConnectCount=0;
+
             Log.e(TAG,"-----------------------------断开重连---------------------------");
             closeConnect();
             try {
-                initSocketClient();
+                    initSocketClient();
                     connect();
+                    Log.e(TAG,"重新连接成功!");
+
+                retryCheckConnectCount=0;
+//                Toast.makeText(this, "连接成功！",Toast.LENGTH_LONG).show();
             } catch (SocketTimeoutException|URISyntaxException e) {
                 e.printStackTrace();
             }
+
         }
     }
 
@@ -424,9 +471,9 @@ public class SpeedEnclosureService extends Service {
         if(!isLogin){
             loginResponseCount++;
             if (loginResponseCount>15){
-                loginResponseCount=0;
                 Log.e(TAG,"登录没回复 一直登陆.......");
                 login();
+                loginResponseCount=0;
             }
         }
     }
@@ -581,7 +628,6 @@ public class SpeedEnclosureService extends Service {
         return jObject;
     }
 
-
     /**
      * @param msgId
      * @param alerts
@@ -595,6 +641,34 @@ public class SpeedEnclosureService extends Service {
             jObject.put("lon", lon);
             jObject.put("lat", lat);
             jObject.put("gpsFlag", gpsFlag);
+            jObject.put("speed",speedGPS);
+            jObject.put("direct", direct);
+            jObject.put("mileage", mileage);
+            jObject.put("alerts", alerts);
+            jObject.put("status",status);
+            jObject.put("gpsTime", gpsTime);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return jObject;
+    }
+
+
+    /**
+     * 紧急报警
+     * @param msgId
+     * @param alerts
+     * @return
+     */
+    private Object getAlarmkeyJSON(int msgId,String alerts){
+        JSONObject jObject=new JSONObject();
+        try {
+            jObject.put("msgId", msgId);
+            jObject.put("type", "GPS");
+            jObject.put("lon", lon);
+            jObject.put("lat", lat);
+            jObject.put("gpsFlag", gpsFlag);
+            jObject.put("alarmkey",alarmkey);
             jObject.put("speed",speedGPS);
             jObject.put("direct", direct);
             jObject.put("mileage", mileage);

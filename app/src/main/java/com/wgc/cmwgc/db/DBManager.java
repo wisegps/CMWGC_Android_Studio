@@ -117,6 +117,7 @@ public class DBManager {
      * 更新一条记录
      *
      * @param deviceDataEntity
+     *
      */
     public void updateDeviceData(DeviceDataEntity deviceDataEntity) {
         DaoMaster daoMaster = new DaoMaster(getWritableDatabase());

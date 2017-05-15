@@ -20,11 +20,14 @@ import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.android.volley.VolleyError;
 import com.orhanobut.logger.Logger;
 import com.wgc.cmwgc.R;
 import com.wgc.cmwgc.Until.GetSystem;
 import com.wgc.cmwgc.Until.SystemTools;
+import com.wgc.cmwgc.Until.Utils;
 import com.wgc.cmwgc.app.Config;
 import com.wgc.cmwgc.service.CoreServer;
 import com.wgc.cmwgc.service.HttpService;
@@ -54,6 +57,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.TimeZone;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -96,7 +101,40 @@ public class LeadMainActivity extends AppCompatActivity{
         checkServiceIsRunning();
 //        initDevice();
         checkDeviceIsBinded();
+
+//        startService(this);
     }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        startService(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+//        startService(this);
+    }
+
+    public static void startService(final Context context){
+        Timer timer = new Timer();
+        TimerTask task = new TimerTask() {
+
+            @Override
+            public void run() {
+                boolean isRun = Utils.isServiceWork(context, "com.wgc.cmwgc.service.CoreServer");
+                if (isRun == false){
+                    Intent intent_service = new Intent(context,CoreServer.class);
+                    context.startService(intent_service);
+                }
+
+            }
+        };
+        timer.schedule(task, 5000);
+    }
+
 
     private void initSpf(){
         spf = getSharedPreferences(Config.SPF_MY,Activity.MODE_PRIVATE);

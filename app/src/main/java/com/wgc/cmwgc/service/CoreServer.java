@@ -8,16 +8,22 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.wgc.cmwgc.Until.SystemTools;
+import com.wgc.cmwgc.Until.Utils;
 import com.wgc.cmwgc.app.Config;
 
 /**
  * Created by Administrator on 2016/12/19.
  */
 public class CoreServer extends Service {
+
+    private String TAG="CoreServer";
 
     @Nullable
     @Override
@@ -42,26 +48,117 @@ public class CoreServer extends Service {
     private SharedPreferences spf;
     private SharedPreferences.Editor editor;
 
+    ///////////////////////////////////////////////////
+//    private Handler handler = new Handler() {
+//        public void handleMessage(android.os.Message msg) {
+//            switch (msg.what) {
+//                case 1:
+//                    startCoreServerAgin();
+//                    break;
+//
+//                default:
+//                    break;
+//            }
+//
+//        };
+//    };
+//
+//    /**
+//     * 使用aidl 启动Service2
+//     */
+//    private StrongService startS2 = new StrongService.Stub() {
+//        @Override
+//        public void stopService() throws RemoteException {
+//            Intent i = new Intent(getBaseContext(), Service2.class);
+//            getBaseContext().stopService(i);
+//        }
+//
+//        @Override
+//        public void startService() throws RemoteException {
+//            Intent i = new Intent(getBaseContext(), Service2.class);
+//            getBaseContext().startService(i);
+//        }
+//    };
+//
+//    /**
+//     * 在内存紧张的时候，系统回收内存时，会回调OnTrimMemory， 重写onTrimMemory当系统清理内存时从新启动Service2
+//     */
+//    @Override
+//    public void onTrimMemory(int level) {
+//		/*
+//		 * 启动service2
+//		 */
+//        startCoreServerAgin();
+//
+//    }
+
+    ////////////////////////////////////
+
     @Override
     public void onCreate() {
         super.onCreate();
-        initSP();
-        // 注册广播接收类
-        mServiceBroadcast = new ServiceBroadcast();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(START_LOCATION);
-        filter.addAction(START_SPEED_ALERT);
-        filter.addAction(START_BEI_DOU);
-        filter.addAction(HEART_BEAT);
-        filter.addAction(ERROR_API);
-        filter.addAction(Intent.ACTION_SCREEN_ON);
-	    filter.addAction(Intent.ACTION_SCREEN_OFF);
-        registerReceiver(mServiceBroadcast, filter);
-        objHandler.postDelayed(mTasks, 1000);
-        Log.w("LocationService", "核心服务：" + "onCreate()");
+//        initSP();
+//        // 注册广播接收类
+//        mServiceBroadcast = new ServiceBroadcast();
+//        IntentFilter filter = new IntentFilter();
+//        filter.addAction(START_LOCATION);
+//        filter.addAction(START_SPEED_ALERT);
+//        filter.addAction(START_BEI_DOU);
+//        filter.addAction(HEART_BEAT);
+//        filter.addAction(ERROR_API);
+//        filter.addAction(Intent.ACTION_SCREEN_ON);
+//	    filter.addAction(Intent.ACTION_SCREEN_OFF);
+//        registerReceiver(mServiceBroadcast, filter);
+//        objHandler.postDelayed(mTasks, 1000);
+        Log.w(TAG, "核心服务：" + "onCreate()");
+
+        ///////////////////////////////////
+//        Toast.makeText(CoreServer.this, "CoreServer 正在启动...", Toast.LENGTH_SHORT)
+//                .show();
+//        Log.e(TAG, "CoreServer 正在启动..............." );
+//        startCoreServerAgin();
+//		/*
+//		 * 此线程用监听Service2的状态
+//		 */
+//        new Thread() {
+//            public void run() {
+//                while (true) {
+//                    boolean isRun = Utils.isServiceWork(CoreServer.this,
+//                            "com.lzg.strongservice.service.Service2");
+//                    if (!isRun) {
+//                        Message msg = Message.obtain();
+//                        msg.what = 1;
+//                        handler.sendMessage(msg);
+//                    }
+//                    try {
+//                        Thread.sleep(1);
+//                    } catch (InterruptedException e) {
+//                        // TODO Auto-generated catch block
+//                        e.printStackTrace();
+//                    }
+//                }
+//            };
+//        }.start();
+//
+//    }
+//
+//
+//    /**
+//     * 判断Service2是否还在运行，如果不是则启动Service2
+//     */
+//    private void startCoreServerAgin() {
+//        boolean isRun = Utils.isServiceWork(CoreServer.this,
+//                "com.lzg.strongservice.service.Service2");
+//        if (isRun == false) {
+//            try {
+//                startS2.startService();
+//            } catch (RemoteException e) {
+//                e.printStackTrace();
+//            }
+//        }
     }
 
-
+/////////////////////////////////////////
     private void initSP(){
         spf = getSharedPreferences(Config.SPF_MY,MODE_PRIVATE);
         editor = spf.edit();
@@ -72,15 +169,31 @@ public class CoreServer extends Service {
     public void onDestroy() {
         super.onDestroy();
         objHandler.removeCallbacks(mTasks);
-        unregisterReceiver(mServiceBroadcast);
         Intent service_again =new Intent(getApplicationContext(),CoreServer.class);
 		startService(service_again);
+        unregisterReceiver(mServiceBroadcast);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.w("LocationService", "核心服务：" + "onStartCommand()");
-        return START_STICKY;
+        Log.e(TAG, "核心服务：" + "onStartCommand()");
+
+        initSP();
+        // 注册广播接收类
+        mServiceBroadcast = new ServiceBroadcast();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(START_LOCATION);
+        filter.addAction(START_SPEED_ALERT);
+        filter.addAction(START_BEI_DOU);
+        filter.addAction(HEART_BEAT);
+        filter.addAction(ERROR_API);
+        filter.addAction(Intent.ACTION_SCREEN_ON);
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        registerReceiver(mServiceBroadcast, filter);
+        objHandler.postDelayed(mTasks, 1000);
+
+//        return START_STICKY;START_STICKY_COMPATIBILITY
+        return START_STICKY_COMPATIBILITY;
     }
 
     /**
@@ -126,7 +239,7 @@ public class CoreServer extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             if(intent.getAction().equals(START_LOCATION)){
-                Log.w("LocationService", "收到广播启动定位服务......" );
+                Log.e(TAG, "收到广播启动定位服务......" );
                 Intent intent_service = new Intent(context,HttpService.class);
                 context.startService(intent_service);
             }else if(intent.getAction().equals(START_SPEED_ALERT)){
@@ -137,7 +250,7 @@ public class CoreServer extends Service {
                 context.startService(intent_beidou);
             }else if(intent.getAction().equals("MY_HEARTbeat")){
                 HeartBeat = intent.getBooleanExtra("Heart",false);
-                Log.w("LocationService", "收到广播 是否在提交数据......" + HeartBeat );
+                Log.e(TAG, "收到广播 是否在提交数据......" + HeartBeat );
             }
         }
     }
@@ -145,39 +258,44 @@ public class CoreServer extends Service {
 
     private Runnable mTasks = new Runnable(){
         public void run(){
-            Log.w("LocationService", "核心服务心跳包！！！！！！！！--- "+ HeartBeat);
+            Log.e(TAG, "核心服务心跳包！！！！！！！！--- "+ HeartBeat);
             if (!SystemTools.isWorked(CoreServer.this, "com.wgc.cmwgc.service.HttpService")) {
-                Log.w("LocationService", "服务没运行" );
+                Log.e(TAG, "startLocationService服务没运行" );
                 startLocationService();
             }else{
-                Log.w("LocationService", "服务已经在运行" );
+                Log.e(TAG, "startLocationService服务已经在运行" );
             }
             /*Websocket 上传数据版本*/
             if(!SystemTools.isWorked(CoreServer.this, "com.wgc.cmwgc.service.SpeedEnclosureService")){
                 startSpeedAlertService();
-                Log.w("SpeedEnclosureService", "服务没运行" );
+                Log.e(TAG, "startSpeedAlertService服务没运行" );
             }else{
-                Log.w("SpeedEnclosureService", "服务已经在运行" );
+                Log.e(TAG, "startSpeedAlertService服务已经在运行" );
             }
             /*JT808协议 上传数据版本*/
             if(!SystemTools.isWorked(CoreServer.this, "com.wgc.cmwgc.service.BeiDouService")){
                 startBeiDouService();
-                Log.w("BeiDouService", "BeiDouService服务没运行" );
+                Log.e(TAG, "BeiDouService服务没运行" );
             }else{
-                Log.w("BeiDouService", "BeiDouService服务已经在运行" );
+                Log.e(TAG, "BeiDouService服务已经在运行" );
             }
             numAgain ++;
             numIsRun ++;
-            if(numAgain == 20){//20分钟再启动一次服务，（）
-                numAgain = 0;
+            if(numAgain == 10){//10分钟再启动一次服务，（）
                 startLocationService();
+                startBeiDouService();
+                startSpeedAlertService();
+                Log.e(TAG, "startLocationService服务已重启了。。。。。。" );
+                Log.e(TAG, "startBeiDouService服务已重启了。。。。。。" );
+                Log.e(TAG, "startSpeedAlertService服务已重启了。。。。。。" );
+                numAgain = 0;
             }
             if(numIsRun == 3){
-                numIsRun = 0;
                 if(!HeartBeat){
-                    HeartBeat = false;
                     startUploadData();
+                    HeartBeat = false;
                 }
+                numIsRun = 0;
             }
             objHandler.postDelayed(mTasks, ONE_MINUTES);
         }

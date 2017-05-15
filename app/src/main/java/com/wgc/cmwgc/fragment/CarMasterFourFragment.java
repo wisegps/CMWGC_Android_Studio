@@ -2,6 +2,7 @@ package com.wgc.cmwgc.fragment;
 
 import android.graphics.Bitmap;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.ImageView;
 
 import com.android.volley.VolleyError;

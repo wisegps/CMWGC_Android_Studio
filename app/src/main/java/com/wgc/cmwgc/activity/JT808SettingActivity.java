@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.wgc.cmwgc.R;
@@ -51,13 +52,13 @@ public class JT808SettingActivity extends AppCompatActivity {
         ip = spf.getString( Config.SP_SERVICE_IP, "");
         port = spf.getString( Config.SP_SERVICE_PORT, "");
 
-        if (TextUtils.isEmpty(ip) || TextUtils.isEmpty(port)){
-            editPort.setText(getResources().getString(R.string.default_port));
-            editIp.setText(getResources().getString(R.string.default_ip));
-        }else{
-            editIp.setText(ip);
-            editPort.setText(port);
-        }
+//        if (TextUtils.isEmpty(ip) || TextUtils.isEmpty(port)){
+//            editPort.setText(getResources().getString(R.string.default_port));
+//            editIp.setText(getResources().getString(R.string.default_ip));
+//        }else{
+//            editIp.setText(ip);
+//            editPort.setText(port);
+//        }
     }
     /**
      * @param context
@@ -77,6 +78,8 @@ public class JT808SettingActivity extends AppCompatActivity {
     private void saveAddress(){
         ip = editIp.getText().toString().trim();
         port = editPort.getText().toString().trim();
+        Log.e("---------ip地址-------" ,ip+"");
+        Log.e("---------port端口号-------" ,ip+"");
         if(TextUtils.isEmpty(ip) || TextUtils.isEmpty(port)){
             Toast.makeText(this,"IP或者端口不能为空",Toast.LENGTH_LONG).show();
             return;
@@ -89,5 +92,8 @@ public class JT808SettingActivity extends AppCompatActivity {
         intent.putExtra("ip",ip);
         intent.putExtra("port",port);
         sendBroadcast(intent);
+//
+//        editIp.setText("");
+//        editPort.setText("");
     }
 }

@@ -10,7 +10,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.GpsSatellite;
 import android.location.GpsStatus;
-import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,17 +19,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 
-import com.orhanobut.logger.Logger;
-import com.wgc.cmwgc.JT808.JT808MSG;
 import com.wgc.cmwgc.R;
 import com.wgc.cmwgc.Until.SystemTools;
 import com.wgc.cmwgc.app.Config;
-import com.wgc.cmwgc.app.MyApplication;
-import com.wgc.cmwgc.event.CheckEvent;
-import com.wgc.cmwgc.service.HttpService;
 
-import org.greenrobot.eventbus.EventBus;
-
+import java.math.BigDecimal;
 import java.util.Iterator;
 
 import butterknife.Bind;
@@ -58,11 +51,17 @@ public class AppInfoActivity extends AppCompatActivity {
     private boolean HeartBeat = false;
     private boolean WebSocketHeartBeat = false;
     private boolean JT808HeartBeat = false;
-
+    //经纬度
+    private String lat =""+0;
+    private String logn = ""+0;
+    //速度
+    private int speed;
+    private String direct = ""+0;
+    private String mileage = ""+0;
     private SharedPreferences spf;
     private SharedPreferences.Editor editor;
 
-    private int versionCode=0;
+    private int versionCode = 0;
     private String ip = "";
     private String port = "";
 
@@ -74,57 +73,57 @@ public class AppInfoActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         initSP();
         initBorcast();
-        locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if(getApplication().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)== PackageManager.PERMISSION_GRANTED) {
+            if (getApplication().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             }
-        }else {
+        } else {
             locationManager.addGpsStatusListener(listener);//侦听GPS状态
         }
         mHandler.postDelayed(mTasks, 0);
     }
 
 
-    private void initSP() {
-        spf = getSharedPreferences(Config.SPF_MY,MODE_PRIVATE);
-        editor = spf.edit();
-
-        ip = spf.getString( Config.SP_SERVICE_IP, "");
-        port = spf.getString( Config.SP_SERVICE_PORT, "");
-    }
-
-
-
-
-
-
     /**
      * 注册广播
      */
-    private void initBorcast(){
+    private void initBorcast() {
         IntentFilter filter = new IntentFilter();
         filter.addAction("MY_HEARTbeat");
         filter.addAction("MY_Websocket_HEARTbeat");
         filter.addAction("MY_JT808_HEARTbeat");
+        filter.addAction(Config.SPEED_ENCLOSURE);
+
+//        filter.addAction("com.ljq.activity.CountService");
         registerReceiver(receiver, filter);
     }
 
     /**
      * 广播接收器
      */
+
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
 
         @Override
         public void onReceive(final Context context, final Intent intent) {
-            if(intent.getAction().equals("MY_HEARTbeat")){
-                HeartBeat = intent.getBooleanExtra("Heart",false);
-                Log.w(TAG,"收到定位广播 ：" + HeartBeat );
-            }else if(intent.getAction().equals("MY_Websocket_HEARTbeat")){
-                WebSocketHeartBeat = intent.getBooleanExtra("websocket_heart",false);
-                Log.w(TAG,"收到Websocket广播 ："  +" -- " +  WebSocketHeartBeat);
-            }else if(intent.getAction().equals("MY_JT808_HEARTbeat")){
-                Log.w(TAG,"收到JT808 服务广播 ："  +" -- " +  WebSocketHeartBeat);
-                JT808HeartBeat = intent.getBooleanExtra("jt_heart",false);
+            if (intent.getAction().equals("MY_HEARTbeat")) {
+                HeartBeat = intent.getBooleanExtra("Heart", false);
+                Log.w(TAG, "收到定位广播 ：" + HeartBeat);
+            } else if (intent.getAction().equals("MY_Websocket_HEARTbeat")) {
+                WebSocketHeartBeat = intent.getBooleanExtra("websocket_heart", false);
+                Log.w(TAG, "收到Websocket广播 ：" + " -- " + WebSocketHeartBeat);
+            } else if (intent.getAction().equals("MY_JT808_HEARTbeat")) {
+                Log.w(TAG, "收到JT808 服务广播 ：" + " -- " + WebSocketHeartBeat);
+                JT808HeartBeat = intent.getBooleanExtra("jt_heart", false);
+            }
+
+            if (intent.getAction().equals(Config.SPEED_ENCLOSURE)){
+                speed = intent.getIntExtra("speed",0);
+                lat = intent.getStringExtra("lat");
+                logn = intent.getStringExtra("lon");
+                mileage = intent.getStringExtra("mileage");
+//                direct = intent.getStringExtra("direct");
+
             }
         }
     };
@@ -145,27 +144,32 @@ public class AppInfoActivity extends AppCompatActivity {
         versionCode = SystemTools.getVersionCode(AppInfoActivity.this);
         if (!SystemTools.isWorked(this, "com.wgc.cmwgc.service.HttpService")) {
             isServiceRunning = false;
-        }else{
+        } else {
             isServiceRunning = true;
         }
-        if (SystemTools.isNetworkAvailable(AppInfoActivity.this)){
+        if (SystemTools.isNetworkAvailable(AppInfoActivity.this)) {
             isNetworkAvailable = true;
-        }else{
+        } else {
             isNetworkAvailable = false;
         }
-        if(getGPSState(AppInfoActivity.this)){
+        if (getGPSState(AppInfoActivity.this)) {
             isGpsAvailable = "是";
-        }else{
+        } else {
             isGpsAvailable = "否";
         }
 
 
-        ip = spf.getString( Config.SP_SERVICE_IP, "");
-        port = spf.getString( Config.SP_SERVICE_PORT, "");
+        ip = spf.getString(Config.SP_SERVICE_IP, "");
+        port = spf.getString(Config.SP_SERVICE_PORT, "");
+//        lat = spf.getString(Config.LAST_LAT, "0");
+//        logn = spf.getString(Config.LAST_LON, "0");
+////        speed = spf.getString(Config.SPEED, "0");
+//        direct = spf.getString(Config.BEARING, "0");
+//        mileage = spf.getString(Config.TOTAL_MILEAGE, "0");
 
 
         Log.w(TAG, "服务是否在运行：" + isServiceRunning + "\n"
-                +"网络是否可用：" + isNetworkAvailable + "\n"
+                + "网络是否可用：" + isNetworkAvailable + "\n"
                 + "GPS是否打开：" + isGpsAvailable + "\n"
                 + "可见卫星数：" + numOfSatellites + "\n"
                 + "定位心跳包：" + HeartBeat + "\n"
@@ -175,60 +179,75 @@ public class AppInfoActivity extends AppCompatActivity {
     }
 
 
-    private Runnable mTasks = new Runnable(){
-        public void run(){
+    private Runnable mTasks = new Runnable() {
+        public void run() {
             checkAllStatus();//检查服务是否正在运行
             mHandler.sendEmptyMessage(UPDATE_UI);
             mHandler.postDelayed(mTasks, ONE_SECOND);
         }
     };
 
-    private Handler mHandler = new Handler(){
+    private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            switch (msg.what){
+            switch (msg.what) {
                 case UPDATE_UI:
                     updateUi();
+                    initSP();
                     break;
             }
         }
     };
 
-    private void updateUi(){
+    private void initSP() {
+        spf = getSharedPreferences(Config.SPF_MY, MODE_PRIVATE);
+        editor = spf.edit();
+
+        ip = spf.getString(Config.SP_SERVICE_IP, "");
+        port = spf.getString(Config.SP_SERVICE_PORT, "");
+//        lat = spf.getString(Config.LAST_LAT, "");
+//        logn = spf.getString(Config.LAST_LON, "");
+////        speed = spf.getString(Config.SPEED, "");
+//        direct = spf.getString(Config.BEARING, "");
+//        mileage = spf.getString(Config.TOTAL_MILEAGE, "");
+
+    }
+
+    private void updateUi() {
         String dingwei = "";
         String lianlu = "";
         String service = "";
         String network = "";
 
-        String jtlianlu="";
+        String jtlianlu = "";
 
 
-        if(HeartBeat){
+        if (HeartBeat) {
             dingwei = "正常";
-        }else {
+        } else {
             dingwei = "不正常";
         }
-        if(WebSocketHeartBeat){
+        if (WebSocketHeartBeat) {
             lianlu = "正常";
-        }else {
+        } else {
             lianlu = "不正常";
         }
-        if(isServiceRunning){
+        if (isServiceRunning) {
             service = "正常";
-        }else {
+        } else {
             service = "不正常";
         }
-        if(isNetworkAvailable){
+        if (isNetworkAvailable) {
             network = "正常";
-        }else {
+        } else {
             network = "不正常";
         }
 
 
-        if(JT808HeartBeat){
+        if (JT808HeartBeat) {
             jtlianlu = "正常";
-        }else{
+        } else {
             jtlianlu = "不正常";
         }
 
@@ -243,12 +262,32 @@ public class AppInfoActivity extends AppCompatActivity {
         sb.append(network);
         sb.append("\n定位是否打开 : ");
         sb.append(isGpsAvailable);
-        sb.append("\n可见卫星数 : ");
-        sb.append(numOfSatellites);
+//        sb.append("\n可见卫星数 : ");
+//        sb.append(numOfSatellites);
         sb.append("\n连接卫星数 : ");
         sb.append(useOfSatellites);
+        BigDecimal bdLat = new BigDecimal(lat);
+        bdLat = bdLat.setScale(6, BigDecimal.ROUND_HALF_UP);
+        sb.append("\n经度 : ");
+        sb.append(bdLat);
+        BigDecimal bdLogn = new BigDecimal(logn);
+        bdLogn = bdLogn.setScale(6, BigDecimal.ROUND_HALF_UP);
+        sb.append("\n纬度 : ");
+        sb.append(bdLogn+"");
+        sb.append("\n速度 : ");
+//        BigDecimal bdSpeed = new BigDecimal(speed);
+//        bdSpeed = bdSpeed.setScale(0, BigDecimal.ROUND_HALF_UP);
+        sb.append(speed);
+        BigDecimal bdMileale = new BigDecimal(mileage);
+        bdMileale = bdMileale.setScale(2, BigDecimal.ROUND_HALF_UP);
+        sb.append("\n里程 : ");
+        sb.append(bdMileale);
         sb.append("\n定位 : ");
         sb.append(dingwei);
+//        BigDecimal bdDirect = new BigDecimal(direct);
+//        bdDirect = bdDirect.setScale(2, BigDecimal.ROUND_HALF_UP);
+//        sb.append("\n方向值 : ");
+//        sb.append(bdDirect);
         sb.append("\n默认链路 : ");
         sb.append(lianlu);
         sb.append("\n部标链路 : ");
@@ -259,6 +298,11 @@ public class AppInfoActivity extends AppCompatActivity {
         sb.append(SystemTools.getCurrentStringTime());
         tvAppInfo.setText(sb.toString());
     }
+
+
+
+
+
 
 
     private boolean getGPSState(Context context){
@@ -294,9 +338,7 @@ public class AppInfoActivity extends AppCompatActivity {
         }
     };
 
-
-
-    @Override
+        @Override
     protected void onDestroy() {
         super.onDestroy();
         mHandler.removeCallbacks(mTasks);

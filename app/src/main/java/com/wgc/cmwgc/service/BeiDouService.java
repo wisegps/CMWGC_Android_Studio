@@ -11,42 +11,28 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.orhanobut.logger.Logger;
-import com.vilyever.socketclient.SocketClient;
-import com.vilyever.socketclient.helper.SocketClientDelegate;
-import com.vilyever.socketclient.helper.SocketClientReceivingDelegate;
-import com.vilyever.socketclient.helper.SocketResponsePacket;
 import com.wgc.cmwgc.JT808.JT808MSG;
 import com.wgc.cmwgc.JT808.MsgDecoder;
 import com.wgc.cmwgc.JT808.PackageData;
 import com.wgc.cmwgc.JT808.TPMSConsts;
 import com.wgc.cmwgc.JT808.util.HexStringUtils;
-import com.wgc.cmwgc.JT808.util.JT808ProtocolUtils;
 import com.wgc.cmwgc.app.Config;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
-import java.net.URISyntaxException;
 import java.net.UnknownHostException;
-import java.nio.channels.UnresolvedAddressException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * 功能： JT808 提交到客户后台
@@ -92,6 +78,8 @@ public class BeiDouService extends Service{
     private int gpsFlag; //2: 精确定位   1：非精确定位
     private String status="[]";
     private String alerts="[]";
+    private int alert = 0;
+    private int alarmkey = 0;
     private String did;
 
     private boolean isRunning;
@@ -119,6 +107,7 @@ public class BeiDouService extends Service{
     private void initBorcast(){
         IntentFilter filter = new IntentFilter();
         filter.addAction(Config.SPEED_ENCLOSURE);
+        filter.addAction(Config.ALARMKEY);
         filter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
         filter.addAction("my_bro_is_enable_jt");
         registerReceiver(receiver, filter);
@@ -144,6 +133,14 @@ public class BeiDouService extends Service{
                 gpsFlag = intent.getIntExtra("gpsFlag",1);
                 gpsTime = gpsTime.replace("-","");
                 sendLocation ();
+
+            }else if (intent.getAction().equals(Config.ALARMKEY)){
+                Toast.makeText(context, "智联车网紧急报警启动！", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, " 智联车网紧急报警启动！");
+                alarmkey = 1;
+                intent.putExtra("alarmkey",alarmkey);
+                sendAlarmkey();//紧急报警
+
             }else if(intent.getAction().equals("android.net.conn.CONNECTIVITY_CHANGE")){
                 ConnectivityManager connectivityManager = (ConnectivityManager)
                         context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -154,8 +151,9 @@ public class BeiDouService extends Service{
                 }else{
                     Log.e(TAG, "北斗----- 没有网络连接");
                     stop();
-                    stopSocket();
+//                    stopSocket();
                 }
+
             }else if(intent.getAction().equals("my_bro_is_enable_jt")){// 开始用socket 连接客户服务器
 
                 ip = intent.getStringExtra("ip");
@@ -164,6 +162,7 @@ public class BeiDouService extends Service{
 
                 stopSocket();
                 startSocket();
+//                sendLocation ();
             }
         }
     };
@@ -297,7 +296,23 @@ public class BeiDouService extends Service{
     }
 
 
+    /**
+     * 发送紧急报警状态值
+     */
+//    int alarmkeyCount;
+    private void sendAlarmkey(){
 
+        if (alarmkey == 0){
+            return;
+        }
+        if (isAuthentication) {
+            currentMsgId = TPMSConsts.msg_id_terminal_location_info_upload;
+            byte[] buf = jt808MSG.getLocation(did, alarmkey, gpsFlag, (int) (lon * 1000000), (int) (lat * 1000000), 0, speedGPS, (int) mileage, direct, gpsTime, flowId);
+            socketThread.sendBuffer(buf);
+            Log.e(TAG, "上传的数据是：" + HexStringUtils.toHexString(buf));
+        }
+
+    }
 
     /**
      * 发送地址
@@ -309,13 +324,16 @@ public class BeiDouService extends Service{
         }
         locationCount++;
         if (locationCount == 30) {
-            locationCount = 0;
-            if (isAuthentication) {
+            if (isAuthentication ) {
                 currentMsgId = TPMSConsts.msg_id_terminal_location_info_upload;
-                socketThread.sendBuffer(jt808MSG.getLocation(did,0, 0, (int) (lon * 1000000), (int) (lat * 1000000), 0, 0, 0, gpsTime, flowId));
-                Log.w(TAG, HexStringUtils.toHexString(jt808MSG.getLocation(did,0, 0, (int) (lon * 1000000), (int) (lat * 1000000), 0, 0, 0, gpsTime, flowId)));
+                byte[] buf = jt808MSG.getLocation(did,alert, gpsFlag, (int) (lon * 1000000), (int) (lat * 1000000), 0, speedGPS, (int) mileage, direct, gpsTime, flowId);
+                socketThread.sendBuffer(buf);
+                Log.e(TAG, HexStringUtils.toHexString(buf));
+                Log.e(TAG, "上传北斗成功！");
             }
+            locationCount = 0;
         }
+
     }
     /**
      * 发送鉴权码
@@ -466,7 +484,7 @@ public class BeiDouService extends Service{
                 try {
                     if (client.isConnected()) {
                         byte[] buffer = new byte[in.available()];
-                        while(in.read(buffer)>0) {
+                        while((in.read(buffer))>0) {
                             parseResponse(buffer);
                         }
                     } else {

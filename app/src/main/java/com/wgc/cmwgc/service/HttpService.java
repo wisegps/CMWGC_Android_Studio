@@ -19,35 +19,32 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.telephony.PhoneStateListener;
 import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 import com.orhanobut.logger.Logger;
+import com.wgc.cmwgc.Until.SystemTools;
 import com.wgc.cmwgc.activity.LeadMainActivity;
 import com.wgc.cmwgc.app.Config;
-import com.wgc.cmwgc.Until.SystemTools;
-import com.wgc.cmwgc.app.MyApplication;
 import com.wgc.cmwgc.db.DBManager;
 import com.wgc.cmwgc.db.DeviceDataEntity;
-import com.wgc.cmwgc.event.CheckEvent;
-import com.wicare.wistorm.WEncrypt;
+import com.wgc.cmwgc.receiver.BootUpReceiver;
 import com.wicare.wistorm.WiStormApi;
 import com.wicare.wistorm.api.WDeviceApi;
 import com.wicare.wistorm.api.WGpsDataApi;
-import com.wicare.wistorm.api.WUserApi;
 import com.wicare.wistorm.http.BaseVolley;
 import com.wicare.wistorm.http.OnFailure;
 import com.wicare.wistorm.http.OnSuccess;
 import com.wicare.wistorm.versionupdate.VersionUpdate;
 
-import org.greenrobot.eventbus.EventBus;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -66,6 +63,7 @@ public class HttpService extends Service {
     private double lonn  = 0 ;
     private int speedGps = 0;
     private int gpsType  = 2;
+	private int alarmkey  = 1;
     private int singnal  = 0;
 	private double mileage = 0;
 	private float bearing = 0;
@@ -101,6 +99,7 @@ public class HttpService extends Service {
 	private void initSpf(){
 		dbManager = DBManager.getInstance(this);//获取数据库实例
 		spf = getSharedPreferences(Config.SPF_MY, Activity.MODE_PRIVATE);
+//		spf.registerOnSharedPreferenceChangeListener("");
 		editor = spf.edit();
 		mileage = Double.valueOf(spf.getString(Config.TOTAL_MILEAGE,"0"));
 		if (mileage==-1){
@@ -138,6 +137,7 @@ public class HttpService extends Service {
 				}else{
 					gpsType = 1;
 				}
+
 			}else{
 				/*计算两点距离*/
 				double dis = SystemTools.getDistance(latt,lonn,location.getLatitude(),location.getLongitude());
@@ -150,9 +150,9 @@ public class HttpService extends Service {
 				}else{
 					gpsType = 1;
 				}
-				distanceCaculate(dis);
-				Log.e(TAG,  " 角度 ："   + location .getBearing() +  " 定位成功----:"  + " 里程 ：" + dis + " 速度 ：" + speedGps  + " type : " + gpsType  +  "   lon：" + location.getLongitude() + "   lat：" + location.getLatitude());
 
+				distanceCaculate(dis);
+				Log.e(TAG,  " 角度 ："   + location .getBearing() +  " 定位成功----:"  + " 里程 ：" + dis + " 速度 ：" + speedGps  +"方向："+bearing+" type : " + gpsType  +  "   lon：" + location.getLongitude() + "   lat：" + location.getLatitude());
 				if(!isNetwork){//没有网络的时候定位到的数据保存起来 等到有网络就上传
 					if (time_uptate_data==30){
 						time_uptate_data = 0;
@@ -199,8 +199,10 @@ public class HttpService extends Service {
 	 */
 	int lastSpeed = 0;
 	double lastD = 0d;
-	private void distanceCaculate(double d){
+	private void distanceCaculate(final double d){
 		speedGps =(int) Math.round(d*3600);//公里/小时
+		Log.e(TAG, "现在的速度为"+speedGps+"");
+
 		if(speedGps==0){
 			status = "[]";
 		}else{
@@ -214,6 +216,8 @@ public class HttpService extends Service {
 		}
 		/*汽车里程*/
 		editor.putString(Config.TOTAL_MILEAGE,String.valueOf(mileage));
+		editor.putString(Config.SPEED,String.valueOf(speedGps));
+		editor.putString(Config.BEARING,String.valueOf(bearing));
 		editor.putString(Config.LAST_LON,String.valueOf(lonn));
 		editor.putString(Config.LAST_LAT,String.valueOf(latt));
 		editor.commit();
@@ -242,8 +246,13 @@ public class HttpService extends Service {
 	private void initBorcast(){
 		IntentFilter filter = new IntentFilter();
 	    filter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
+		filter.addAction("my_bro_is_enable_jt");
+		filter.addAction("my_bro_is_speed");
+//		filter.addAction("MY_HEARTbeat");
 		filter.addAction(CoreServer.START_UPLPAD);
-	    registerReceiver(receiver, filter); 
+		filter.addAction(CoreServerAgin.START_UPLPAD);
+	    registerReceiver(receiver, filter);
+
 	}
 	
 	/**
@@ -384,17 +393,20 @@ public class HttpService extends Service {
 
 	/**
 	 * 广播接收器
-	 */	
-	private final BroadcastReceiver receiver = new BroadcastReceiver(){  
-		  
+	 */
+	private final BroadcastReceiver receiver = new BroadcastReceiver(){
 	    @Override  
 	    public void onReceive(final Context context, final Intent intent) {
+
 			if(intent.getAction().equals("android.net.conn.CONNECTIVITY_CHANGE")){
 				ConnectivityManager connectivityManager = (ConnectivityManager)
 						context.getSystemService(Context.CONNECTIVITY_SERVICE);
 				NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
 				if(networkInfo != null && networkInfo.isAvailable()){
 					Log.e(TAG, "有网络服务  : ");
+					//在线更新版本号
+					updataONlineDevice();
+
 					isNetwork = true;
 					checkIsCreate();
 					if(isHadOfflineData){
@@ -404,8 +416,10 @@ public class HttpService extends Service {
 					isNetwork = false;
 					Log.e(TAG, "没有网络连接");
 				}
-			}else if(intent.getAction().equals(CoreServer.START_UPLPAD)){
+			}else if(intent.getAction().equals(CoreServer.START_UPLPAD)){//主服务1
 				checkIsCreate();
+//			}else if(intent.getAction().equals(CoreServerAgin.START_UPLPAD)){//主服务2
+//				checkIsCreate();
 			}
 	    }  
 	};  
@@ -510,7 +524,7 @@ public class HttpService extends Service {
 			if(time_uptate_data == 30){
 				if(latt!=0 || lonn!=0){
 					if(isNetwork){
-//						uploadLocation();
+						uploadLocation();
 						time_uptate_data = 0;
 					}
 				}
@@ -604,6 +618,7 @@ public class HttpService extends Service {
 		params.put("lat", String.valueOf(entity.getLat()));
 		params.put("lon", String.valueOf(entity.getLon()));
 		params.put("gpsFlag", String.valueOf(entity.getGpsFlag()));
+//		params.put("alert", String.valueOf(entity.getAlert()));
 		params.put("speed", String.valueOf(entity.getSpeed()));
 		params.put("direct", String.valueOf(entity.getDirect()));
 		params.put("signal", String.valueOf(entity.getSignal()));
@@ -644,8 +659,9 @@ public class HttpService extends Service {
 		HashMap<String, String> params = new HashMap<String, String>();
 		params.put("access_token", Config.ACCESS_TOKEN);
 		params.put("_did", Config.con_serial);
-		params.put("activeGpsData", getOfflineActiveGpsData(entity).toString());
-		params.put("params",getDeviceParams().toString());
+//		params.put("activeGpsData", getOfflineActiveGpsData(entity).toString());
+		params.put("params.version", "v"+SystemTools.getVersion(this));
+//		params.put("params",getDeviceParams().toString());
 		deviceApi.updata(params, new OnSuccess() {
 
 			@Override
@@ -662,6 +678,34 @@ public class HttpService extends Service {
 					Log.e(TAG, "离线数据 ：" + entityList.size() + "当前提交 : " + currentUploadIndex);
 					uploadOfflineLocation(entityList.get(currentUploadIndex));
 				}
+			}
+		}, new OnFailure() {
+
+			@Override
+			protected void onFailure(VolleyError error) {
+				// TODO Auto-generated method stub
+				Log.e(TAG, "更新设备返回信息: " + error.toString());
+			}
+		});
+	}
+
+
+	/**
+	 * 在线更新设备信息
+	 */
+	private void updataONlineDevice(){
+		HashMap<String, String> params = new HashMap<String, String>();
+		params.put("access_token", Config.ACCESS_TOKEN);
+		params.put("_did", Config.con_serial);
+		params.put("params.version", "v"+ SystemTools.getVersion(this));
+		Log.e(TAG, "在线更新版本号信息 : " +  getDeviceParams().toString()+SystemTools.getVersion(this));
+
+		deviceApi.updata(params, new OnSuccess() {
+
+			@Override
+			protected void onSuccess(String response) {
+				// TODO Auto-generated method stub
+				Log.e(TAG, "更新设备离线数据返回信息 : " + response);
 			}
 		}, new OnFailure() {
 
@@ -698,98 +742,98 @@ public class HttpService extends Service {
 		return jObject;
 	}
 
-//    /**
-//	 * 更新位置信息
-//	 */
-//	String revTime = "";
-//	private void uploadLocation(){
-//		revTime = WiStormApi.getCurrentTime();
-//		HashMap<String, String> params = new HashMap<String, String>();
-//		params.put("access_token", Config.ACCESS_TOKEN);
-//		params.put("did", Config.con_serial);
-//		params.put("lat", String.valueOf(latt));
-//		params.put("lon", String.valueOf(lonn));
-//		params.put("gpsFlag", String.valueOf(gpsType));
-//		params.put("speed", String.valueOf(speedGps));
-//		params.put("direct", String.valueOf(bearing));
-//		params.put("signal", String.valueOf(singnal));
-//		params.put("createdAt", revTime);
-//		params.put("gpsTime", Config.gps_time);
-//		params.put("rcvTime", revTime);//�
-//		params.put("mileage", String.valueOf(mileage));//�
-//		params.put("fuel", "-1");//
-//		params.put("status",status);
-//		Log.d(TAG, Config.con_serial +  " 定位时间： " + Config.gps_time + "  : " + WiStormApi.getCurrentTime());
-//		gpsDataApi.gpsCreate(params, new OnSuccess() {
-//
-//			@Override
-//			protected void onSuccess(String response) {
-//				// TODO Auto-generated method stub
-//				Log.e(TAG, response);
-//				try {
-//					JSONObject jsonObject = new JSONObject(response);
-//					if("0".equals(jsonObject.getString("status_code"))){
-//						updataDevice();//
-//					}
-//				} catch (JSONException e) {
-//					e.printStackTrace();
-//				}
-//			}
-//		}, new OnFailure() {
-//
-//			@Override
-//			protected void onFailure(VolleyError error) {}
-//		});
-//	}
+    /**
+	 * 更新位置信息
+	 */
+	String revTime = "";
+	private void uploadLocation(){
+		revTime = WiStormApi.getCurrentTime();
+		HashMap<String, String> params = new HashMap<String, String>();
+		params.put("access_token", Config.ACCESS_TOKEN);
+		params.put("did", Config.con_serial);
+		params.put("lat", String.valueOf(latt));
+		params.put("lon", String.valueOf(lonn));
+		params.put("gpsFlag", String.valueOf(gpsType));
+		params.put("speed", String.valueOf(speedGps));
+		params.put("direct", String.valueOf(bearing));
+		params.put("signal", String.valueOf(singnal));
+		params.put("createdAt", revTime);
+		params.put("gpsTime", Config.gps_time);
+		params.put("rcvTime", revTime);//�
+		params.put("mileage", String.valueOf(mileage));//�
+		params.put("fuel", "-1");//
+		params.put("status",status);
+		Log.d(TAG, Config.con_serial +  " 定位时间： " + Config.gps_time + "  : " + WiStormApi.getCurrentTime());
+		gpsDataApi.gpsCreate(params, new OnSuccess() {
 
-//	/**
-//	 * 更新设备信息
-//	 */
-//	private void updataDevice(){
-//		HashMap<String, String> params = new HashMap<String, String>();
-//		params.put("access_token", Config.ACCESS_TOKEN);
-////		params.put("uid", Config.USER_ID);//不能更新UID 不然别人绑定会出问题
-//		params.put("_did", Config.con_serial);
-//		params.put("activeGpsData", getActiveGpsData().toString());
-//		params.put("params",getDeviceParams().toString());
-//		deviceApi.updata(params, new OnSuccess() {
-//
-//			@Override
-//			protected void onSuccess(String response) {
-//				// TODO Auto-generated method stub
-//				Log.i(TAG, "更新设备返回信息 : " + response);
-//			}
-//		}, new OnFailure() {
-//
-//			@Override
-//			protected void onFailure(VolleyError error) {
-//				// TODO Auto-generated method stub
-//				Log.e(TAG, "更新设备返回信息: " + error.toString());
-//			}
-//		});
-//	}
+			@Override
+			protected void onSuccess(String response) {
+				// TODO Auto-generated method stub
+				Log.e(TAG, response);
+				try {
+					JSONObject jsonObject = new JSONObject(response);
+					if("0".equals(jsonObject.getString("status_code"))){
+						updataDevice();//
+					}
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}
+		}, new OnFailure() {
 
-//	/**
-//	 * @return json activeGpsData
-//	 */
-//	private Object getActiveGpsData(){
-//    	JSONObject jObject=new JSONObject();
-//        try {
-//        	jObject.put("lon", lonn);
-//        	jObject.put("lat", latt);
-//        	jObject.put("gpsTime", WiStormApi.getCurrentTime());
-//        	jObject.put("did", Config.con_serial);
-//        	jObject.put("gpsFlag", gpsType);
-//        	jObject.put("speed", speedGps);
-//        	jObject.put("direct", bearing);
-//        	jObject.put("signal", singnal);
-//			jObject.put("rcvTime", revTime);//�
-//			jObject.put("mileage", mileage);//�
-//			jObject.put("fuel", "-1");//
-//			jObject.put("status", status);//
-//		} catch (JSONException e) {
-//			e.printStackTrace();
-//		}
-//    	return jObject;
-//    }
+			@Override
+			protected void onFailure(VolleyError error) {}
+		});
+	}
+
+	/**
+	 * 更新设备信息
+	 */
+	private void updataDevice(){
+		HashMap<String, String> params = new HashMap<String, String>();
+		params.put("access_token", Config.ACCESS_TOKEN);
+//		params.put("uid", Config.USER_ID);//不能更新UID 不然别人绑定会出问题
+		params.put("_did", Config.con_serial);
+		params.put("activeGpsData", getActiveGpsData().toString());
+		params.put("params.version", "v"+SystemTools.getVersion(this));
+		deviceApi.updata(params, new OnSuccess() {
+
+			@Override
+			protected void onSuccess(String response) {
+				// TODO Auto-generated method stub
+				Log.i(TAG, "更新设备返回信息 : " + response);
+			}
+		}, new OnFailure() {
+
+			@Override
+			protected void onFailure(VolleyError error) {
+				// TODO Auto-generated method stub
+				Log.e(TAG, "更新设备返回信息: " + error.toString());
+			}
+		});
+	}
+
+	/**
+	 * @return json activeGpsData
+	 */
+	private Object getActiveGpsData(){
+    	JSONObject jObject=new JSONObject();
+        try {
+        	jObject.put("lon", lonn);
+        	jObject.put("lat", latt);
+        	jObject.put("gpsTime", WiStormApi.getCurrentTime());
+        	jObject.put("did", Config.con_serial);
+        	jObject.put("gpsFlag", gpsType);
+        	jObject.put("speed", speedGps);
+        	jObject.put("direct", bearing);
+        	jObject.put("signal", singnal);
+			jObject.put("rcvTime", revTime);//�
+			jObject.put("mileage", mileage);//�
+			jObject.put("fuel", "-1");//
+			jObject.put("status", status);//
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+    	return jObject;
+    }
 }

@@ -226,7 +226,7 @@ public class JT808MSG {
      * @param flowId
      * @return
      */
-    public byte[] getLocation(String did,int alert,int status,int lon,int lat,int heigh,int speed,int direction,String time,int flowId){
+    public byte[] getLocation(String did,int alert,int status,int lon,int lat,int heigh,int speed,int mileage, int direction,String time,int flowId){
        /* 消息体 */
         byte[] alertFlay = new byte[4];
         alertFlay = bitOperator.integerTo4Bytes(alert);
@@ -239,15 +239,17 @@ public class JT808MSG {
         byte[] gpsHeigh = new byte[2];
         gpsHeigh = bitOperator.integerTo2Bytes(heigh);
         byte[] gpsSpeed = new byte[2];
-        gpsSpeed = bitOperator.integerTo2Bytes(speed);
+        gpsSpeed = bitOperator.integerTo2Bytes(speed * 10);
         byte[] gpsDirection = new byte[2];
         gpsDirection = bitOperator.integerTo2Bytes(direction);
-        byte[] gpsTime = new byte[6];
+        byte[] gpsMileage = new byte[4];
+        gpsMileage = bitOperator.integerTo4Bytes(mileage * 10);
 
         Log.d("BeiDouService","---- " + time);
+        byte[] gpsTime = new byte[6];
         gpsTime = bcd8421Operater.string2Bcd(time);
 
-        byte [] body = new byte[alertFlay.length+gpsStatus.length+gpsLon.length+gpsLat.length+gpsHeigh.length+gpsSpeed.length+gpsDirection.length+gpsTime.length];
+        byte [] body = new byte[alertFlay.length+gpsStatus.length+gpsLon.length+gpsLat.length+gpsHeigh.length+gpsSpeed.length+2+gpsMileage.length+gpsDirection.length+gpsTime.length];
         System.arraycopy(alertFlay, 0, body, 0, alertFlay.length);
         System.arraycopy(gpsStatus, 0, body, 4, gpsStatus.length);
 
@@ -257,6 +259,14 @@ public class JT808MSG {
         System.arraycopy(gpsSpeed, 0, body, 18, gpsSpeed.length);
         System.arraycopy(gpsDirection, 0, body, 20, gpsDirection.length);
         System.arraycopy(gpsTime, 0, body, 22, gpsTime.length);
+        byte[] a = new byte[1];
+        byte[] b = new byte[1];
+        a[0] = 1;
+        b[0] = 4;
+        System.arraycopy(a, 0, body, 28, 1);
+        System.arraycopy(b, 0, body, 29, 1);
+        System.arraycopy(gpsMileage, 0, body, 30, 4);
+        Log.e("数据--------------",body+"");
        /*
         7E
         02 00

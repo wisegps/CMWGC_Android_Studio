@@ -14,7 +14,7 @@
     <TextView
         android:id="@+id/tv_app_info"
         android:text="软件状态信息"
-        android:textSize="@dimen/px_40"
+        android:textSize="@dimen/px_30"
         android:layout_centerInParent="true"
         android:layout_marginTop="@dimen/px_50"
         android:layout_centerHorizontal="true"
